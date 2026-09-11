@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#07111f">
+  <meta name="description" content="Sayeed Courses — premium learning app with in-app YouTube lessons.">
+  <title>Sayeed Courses</title>
+  <link rel="icon" href="assets/images/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="index.html" aria-label="Sayeed Courses home">
+        <img src="assets/images/logo.png" alt="Sayeed Courses logo">
+        <div>
+          <div class="brand-title">SAYEED</div>
+          <div class="brand-subtitle">COURSES</div>
+        </div>
+      </a>
+      <nav class="desktop-nav">
+        <a href="#courses">Courses</a>
+        <a href="#how">How it works</a>
+        <a class="nav-admin" href="admin.html">Admin</a>
+      </nav>
+      <button class="icon-btn mobile-menu" id="menuBtn" aria-label="Open menu">☰</button>
+    </div>
+    <div class="mobile-nav" id="mobileNav">
+      <a href="#courses">Courses</a>
+      <a href="#how">How it works</a>
+      <a href="admin.html">Admin</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero container">
+      <div class="hero-copy">
+        <span class="eyebrow">PREMIUM LEARNING • SIMPLE ACCESS</span>
+        <h1>Learn every chapter.<br><span class="gradient-text">Right inside the app.</span></h1>
+        <p>Watch course lessons in a focused, mobile-friendly player without leaving Sayeed Courses.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#courses">Explore Courses</a>
+          <a class="btn btn-ghost" href="#how">How it works</a>
+        </div>
+        <div class="hero-trust">
+          <div class="trust-item"><span class="trust-icon">▶</span><span>In-app video lessons</span></div>
+          <div class="trust-item"><span class="trust-icon">✓</span><span>Chapter & part based</span></div>
+          <div class="trust-item"><span class="trust-icon">⌁</span><span>Built for mobile</span></div>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="glow"></div>
+        <div class="preview-card">
+          <div class="preview-head">
+            <span class="preview-pill">NOW LEARNING</span>
+            <span class="preview-dots">•••</span>
+          </div>
+          <div class="preview-video">
+            <div class="preview-play">▶</div>
+            <div class="preview-overlay"></div>
+            <div class="preview-label">Chapter 01 • Part 01</div>
+          </div>
+          <div class="preview-lines">
+            <span></span><span></span><span class="short"></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section container" id="courses">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">YOUR LEARNING LIBRARY</span>
+          <h2>Explore courses</h2>
+        </div>
+        <div class="course-tools">
+          <label class="search-box"><span>⌕</span><input id="courseSearch" type="search" placeholder="Search courses"></label>
+          <select id="courseFilter" aria-label="Course category"><option value="all">All courses</option></select>
+        </div>
+      </div>
+      <div id="courseGrid" class="course-grid"></div>
+      <div id="courseEmpty" class="empty-state hidden">
+        <div class="empty-icon">◌</div>
+        <h3>No courses found</h3>
+        <p>Try a different search term.</p>
+      </div>
+    </section>
+
+    <section class="section section-soft" id="how">
+      <div class="container">
+        <div class="section-head centered">
+          <span class="eyebrow">DESIGNED FOR STUDENTS</span>
+          <h2>Simple. Focused. Course-first.</h2>
+          <p>Choose a course, pick a chapter, and keep learning without leaving the app.</p>
+        </div>
+        <div class="steps-grid">
+          <article class="step-card"><span class="step-number">01</span><div class="step-icon">▦</div><h3>Choose a course</h3><p>See all your published courses in one clean dashboard.</p></article>
+          <article class="step-card"><span class="step-number">02</span><div class="step-icon">⌘</div><h3>Open a chapter</h3><p>Lessons are grouped by chapter and part so you can find them quickly.</p></article>
+          <article class="step-card"><span class="step-number">03</span><div class="step-icon">▶</div><h3>Watch in-app</h3><p>Your YouTube lesson opens inside our professional learning player.</p></article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer container">
+    <div>© <span id="year"></span> Sayeed Courses</div>
+    <div class="footer-love">Made With ❤️ By Shahid Sir</div>
+  </footer>
+
+  <script type="module" src="assets/js/app.js"></script>
+</body>
+</html>
