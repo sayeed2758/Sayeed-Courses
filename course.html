@@ -1,44 +1,65 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#07111f">
-  <title>Course • Sayeed Courses</title>
-  <link rel="icon" href="assets/images/logo.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#07111f" />
+  <link rel="icon" href="assets/img/logo.png" />
+  <link rel="stylesheet" href="assets/css/app.css" />
+  <title>Course — Sayeed Courses</title>
 </head>
-<body class="course-page">
-  <header class="topbar sticky">
-    <div class="topbar-inner">
-      <a class="brand" href="index.html"><img src="assets/images/logo.png" alt="Sayeed Courses"><div><div class="brand-title">SAYEED</div><div class="brand-subtitle">COURSES</div></div></a>
-      <a class="back-link" href="index.html">← Courses</a>
-    </div>
-  </header>
-
-  <main class="container course-shell">
-    <section id="courseHero" class="course-hero-card"></section>
-    <div class="course-layout">
-      <section class="lesson-panel">
-        <div class="panel-head"><div><span class="eyebrow">COURSE CONTENT</span><h2>Chapters & lessons</h2></div><span id="lessonCount" class="count-pill"></span></div>
-        <div id="chapterList" class="chapter-list"></div>
-      </section>
-      <aside class="player-panel" id="playerPanel">
-        <div class="player-sticky">
-          <div id="playerShell" class="player-shell">
-            <div class="player-placeholder"><div class="loader"></div><p>Choose a lesson to start watching.</p></div>
-          </div>
-          <div id="nowPlaying" class="now-playing hidden"></div>
+<body>
+  <div class="site-shell">
+    <header class="topbar glass">
+      <a class="brand" href="index.html">
+        <img src="assets/img/logo.png" alt="Sayeed Courses logo" class="brand-logo" />
+        <div>
+          <div class="brand-name">SAYEED COURSES</div>
+          <div class="brand-sub">Learning portal</div>
         </div>
-      </aside>
-    </div>
-  </main>
+      </a>
+      <div class="top-actions"><a class="ghost-btn" href="index.html">Courses</a></div>
+    </header>
 
-  <footer class="footer container"><div>© <span id="year"></span> Sayeed Courses</div><div class="footer-love">Made With ❤️ By Shahid Sir</div></footer>
-  <script src="https://www.youtube.com/iframe_api"></script>
-  <script type="module" src="assets/js/course.js"></script>
+    <main>
+      <section class="course-hero glass-card" id="courseHero"></section>
+
+      <div class="course-layout">
+        <aside class="module-panel glass-card">
+          <div class="panel-heading">
+            <div>
+              <span class="eyebrow">COURSE CONTENT</span>
+              <h2>Modules</h2>
+            </div>
+            <span id="moduleCount" class="mini-count">0</span>
+          </div>
+          <div id="moduleList" class="module-list"></div>
+        </aside>
+
+        <section class="lesson-stage">
+          <div class="player-card glass-card">
+            <div class="player-wrap" id="playerWrap">
+              <div class="player-placeholder">
+                <div class="player-play">▶</div>
+                <h3>Select a module</h3>
+                <p>Your lesson will play inside the application.</p>
+              </div>
+            </div>
+          </div>
+          <div class="lesson-info glass-card" id="lessonInfo">
+            <span class="eyebrow">NOW PLAYING</span>
+            <h2>Select a module to begin</h2>
+            <p>Choose a module from the left to start learning.</p>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="footer">Made With <span>♥</span> By Shahid Sir</footer>
+  </div>
+
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/app.js"></script>
+  <script src="assets/js/course.js"></script>
 </body>
 </html>
