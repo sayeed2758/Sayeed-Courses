@@ -1,31 +1,55 @@
-import { adminEmail, isFirebaseConfigured } from './config.js';
-import { getCourses, saveCourse, saveLesson, deleteCourse, deleteLesson, initFirebase, defaultDemo } from './db.js';
+(function () {
+  const api = window.SayeedCourses;
+  let data = api.getData().map(api.normalizeCourse);
+  const $ = id => document.getElementById(id);
+  const form = $('courseForm'); const moduleForm = $('moduleForm');
+  const courseSelect = $('moduleCourse');
+  const adminList = $('adminList');
+  const toast = $('toast');
 
-const $=s=>document.querySelector(s); const state={courses:[], firebase:false, user:null};
-const esc=v=>String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
-
-async function boot(){
-  $('#year').textContent=new Date().getFullYear();
-  const env=await initFirebase(); state.firebase=env.configured;
-  if(state.firebase){
-    const authMod=env.authMod; authMod.onAuthStateChanged(env.auth, user=>{state.user=user; updateAuth();});
-  } else { state.user={demo:true,email:'Demo Admin'}; updateAuth(); }
-  $('#loginForm').addEventListener('submit',login); $('#logoutBtn').addEventListener('click',logout); $('#courseForm').addEventListener('submit',saveCourseForm); $('#lessonForm').addEventListener('submit',saveLessonForm); $('#resetCourseBtn').onclick=resetCourse; $('#refreshAdminBtn').onclick=load; $('#seedDemoBtn').onclick=seedDemo;
-}
-function updateAuth(){ const logged=!!state.user; $('#loginCard').classList.toggle('hidden',logged); $('#adminDashboard').classList.toggle('hidden',!logged); $('#logoutBtn').classList.toggle('hidden',!logged); if(logged) load(); }
-async function login(e){ e.preventDefault(); const msg=$('#loginMessage'); msg.textContent=''; if(!state.firebase){msg.textContent='Demo mode is active. No Firebase sign-in is required.'; state.user={demo:true}; updateAuth(); return;} try{const env=await initFirebase(); await env.authMod.signInWithEmailAndPassword(env.auth,$('#loginEmail').value.trim(),$('#loginPassword').value);}catch(err){msg.textContent=err.message;} }
-async function logout(){ if(!state.firebase){state.user=null;updateAuth();return;} const env=await initFirebase(); await env.authMod.signOut(env.auth); }
-async function load(){ state.courses=await getCourses({includeUnpublished:true}); fillCourseSelect(); renderLibrary(); }
-function fillCourseSelect(){ $('#lessonCourse').innerHTML=state.courses.map(c=>`<option value="${esc(c.id)}">${esc(c.title)}</option>`).join(''); }
-function renderLibrary(){ const box=$('#adminLibrary'); if(!state.courses.length){box.innerHTML='<div class="empty-state">No courses yet.</div>';return;} box.innerHTML=state.courses.map(c=>`<article class="admin-course"><div class="admin-course-main"><span class="course-category">${esc(c.category||'COURSE')}</span><h3>${esc(c.title)}</h3><p>${esc(c.description||'')}</p><div class="admin-mini-meta"><span>${(c.lessons||[]).length} lessons</span><span>${c.published?'Published':'Draft'}</span></div></div><div class="admin-course-actions"><button class="btn btn-ghost small" data-edit="${esc(c.id)}">Edit</button><button class="btn btn-danger small" data-delete="${esc(c.id)}">Delete</button></div><div class="admin-lessons">${groupLessons(c).map(([ch,ls])=>`<div class="admin-chapter"><strong>${esc(ch)}</strong>${ls.map(l=>`<div class="admin-lesson"><span>${esc(l.part||'')} — ${esc(l.title)}</span><button class="icon-delete" data-lesson-delete="${esc(c.id)}" data-lesson-id="${esc(l.id)}">×</button></div>`).join('')}</div>`).join('')}</div></article>`).join('');
-  box.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>editCourse(b.dataset.edit)); box.querySelectorAll('[data-delete]').forEach(b=>b.onclick=()=>removeCourse(b.dataset.delete)); box.querySelectorAll('[data-lesson-delete]').forEach(b=>b.onclick=()=>removeLesson(b.dataset.lessonDelete,b.dataset.lessonId)); }
-function groupLessons(c){const m=new Map();(c.lessons||[]).forEach(l=>{const k=l.chapter||'General';if(!m.has(k))m.set(k,[]);m.get(k).push(l)});return [...m.entries()];}
-async function saveCourseForm(e){e.preventDefault();const data={id:$('#editingCourseId').value||undefined,title:$('#courseTitle').value.trim(),category:$('#courseCategory').value.trim(),description:$('#courseDescription').value.trim(),thumbnail:$('#courseThumb').value.trim(),published:$('#coursePublished').checked}; if(!data.title)return;await saveCourse(data);resetCourse();await load();}
-function editCourse(id){const c=state.courses.find(c=>c.id===id);if(!c)return;$('#editingCourseId').value=c.id;$('#courseTitle').value=c.title;$('#courseCategory').value=c.category||'';$('#courseDescription').value=c.description||'';$('#courseThumb').value=c.thumbnail||'';$('#coursePublished').checked=c.published!==false;$('#courseSaveMode').textContent='Editing';scrollTo({top:0,behavior:'smooth'});}
-function resetCourse(){['editingCourseId','courseTitle','courseCategory','courseDescription','courseThumb'].forEach(id=>$('#'+id).value='');$('#coursePublished').checked=true;$('#courseSaveMode').textContent='New';}
-async function removeCourse(id){if(!confirm('Delete this course and all of its lessons?'))return;await deleteCourse(id);await load();}
-async function saveLessonForm(e){e.preventDefault(); const id=$('#lessonCourse').value; if(!id)return; const youtubeUrl=$('#youtubeUrl').value.trim(); const youtubeId=extractYoutubeId(youtubeUrl); if(!youtubeId){alert('Please enter a valid YouTube URL.');return;} await saveLesson(id,{title:$('#lessonTitle').value.trim(),chapter:$('#lessonChapter').value.trim()||'Chapter 1',part:$('#lessonPart').value.trim()||'Part 1',youtubeId,order:Number($('#lessonOrder').value)||1,published:$('#lessonPublished').checked}); e.target.reset();$('#lessonOrder').value='1';await load();}
-function extractYoutubeId(url){try{const u=new URL(url); if(u.hostname.includes('youtu.be'))return u.pathname.slice(1); return u.searchParams.get('v') || (u.pathname.match(/\/embed\/([^/]+)/)||[])[1] || '';}catch{return url.match(/[A-Za-z0-9_-]{11}/)?.[0]||'';}}
-async function removeLesson(courseId,lessonId){if(!confirm('Delete this lesson?'))return;await deleteLesson(courseId,lessonId);await load();}
-async function seedDemo(){ if(state.firebase){alert('Demo seed is intended for local mode only.');return;} localStorage.setItem('sayeed_courses_demo_v1',JSON.stringify(defaultDemo));await load();alert('Demo course loaded.'); }
-boot().catch(console.error);
+  function notify(msg, bad=false) {
+    toast.textContent = msg; toast.className = `toast show${bad?' bad':''}`;
+    clearTimeout(notify.t); notify.t = setTimeout(()=>toast.className='toast', 2400);
+  }
+  function persist(){ api.saveData(data); }
+  function refreshCourseSelect(){
+    courseSelect.innerHTML = data.length ? data.map(c=>`<option value="${api.escapeHtml(c.id)}">${api.escapeHtml(c.name)}</option>`).join('') : '<option value="">Create a course first</option>';
+  }
+  function render(){
+    refreshCourseSelect(); adminList.innerHTML='';
+    if(!data.length){ adminList.innerHTML='<div class="admin-empty">No courses yet. Create your first course above.</div>'; return; }
+    data.forEach(c=>{
+      const block=document.createElement('div'); block.className='admin-course';
+      const modules=[...(c.modules||[])].sort((a,b)=>Number(a.number)-Number(b.number));
+      block.innerHTML=`<div class="admin-course-head"><div><span class="eyebrow">COURSE</span><h3>${api.escapeHtml(c.name)}</h3><p>${api.escapeHtml(c.subtitle||'')}</p></div><div class="row-actions"><button class="tiny-btn" data-edit="${c.id}">Edit</button><button class="tiny-btn danger" data-delete="${c.id}">Delete</button></div></div><div class="admin-modules">${modules.length?modules.map(m=>`<div class="admin-module"><div class="admin-module-title"><span class="module-index">${String(m.number).padStart(2,'0')}</span><div><b>${api.escapeHtml(m.title)}</b><small>${api.escapeHtml(m.url)}</small></div></div><button class="tiny-btn danger" data-delmodule="${c.id}" data-mid="${m.id}">Remove</button></div>`).join(''):'<div class="module-empty">No modules added.</div>'}</div>`;
+      adminList.appendChild(block);
+    });
+  }
+  form.addEventListener('submit', e=>{
+    e.preventDefault();
+    const id=$('courseId').value; const payload={name:$('courseName').value.trim(),subtitle:$('courseSubtitle').value.trim(),description:$('courseDescription').value.trim(),cover:$('courseCover').value.trim()};
+    if(!payload.name) return;
+    if(id){ const c=data.find(x=>x.id===id); Object.assign(c,payload); notify('Course updated.'); }
+    else { data.push(api.normalizeCourse({id:crypto.randomUUID(),...payload,modules:[]})); notify('Course created.'); }
+    persist(); resetCourse(); render();
+  });
+  moduleForm.addEventListener('submit', e=>{
+    e.preventDefault();
+    const course=data.find(x=>x.id===courseSelect.value); if(!course) return notify('Create a course first.', true);
+    const url=$('moduleUrl').value.trim(); const vid=api.youtubeId(url); if(!vid) return notify('Enter a valid YouTube link.', true);
+    const n=Number($('moduleNumber').value); if(!Number.isInteger(n)||n<1) return notify('Module number must be 1 or higher.', true);
+    course.modules=course.modules||[]; const duplicate=course.modules.find(m=>Number(m.number)===n); if(duplicate) return notify('That module number already exists.', true);
+    course.modules.push({id:crypto.randomUUID(),number:n,title:$('moduleTitle').value.trim(),url,description:$('moduleDescription').value.trim()});
+    course.modules.sort((a,b)=>Number(a.number)-Number(b.number)); persist(); resetModule(); render(); notify('Module added.');
+  });
+  adminList.addEventListener('click', e=>{
+    const edit=e.target.closest('[data-edit]'); const del=e.target.closest('[data-delete]'); const dm=e.target.closest('[data-delmodule]');
+    if(edit){ const c=data.find(x=>x.id===edit.dataset.edit); $('courseId').value=c.id; $('courseName').value=c.name; $('courseSubtitle').value=c.subtitle||''; $('courseDescription').value=c.description||''; $('courseCover').value=c.cover||''; window.scrollTo({top:0,behavior:'smooth'}); }
+    if(del){ data=data.filter(x=>x.id!==del.dataset.delete); persist(); render(); notify('Course deleted.'); }
+    if(dm){ const c=data.find(x=>x.id===dm.dataset.delmodule); c.modules=(c.modules||[]).filter(m=>m.id!==dm.dataset.mid); persist(); render(); notify('Module removed.'); }
+  });
+  function resetCourse(){ form.reset(); $('courseId').value=''; }
+  function resetModule(){ moduleForm.reset(); if(data[0]) courseSelect.value=data[0].id; }
+  $('resetCourse').onclick=resetCourse; $('resetModule').onclick=resetModule; $('refreshAdmin').onclick=()=>{data=api.getData().map(api.normalizeCourse);render();notify('Refreshed.');};
+  render();
+})();

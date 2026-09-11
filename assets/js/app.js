@@ -1,39 +1,77 @@
-import { getCourses } from './db.js';
+(function () {
+  const cfg = window.SayeedConfig;
+  const storageKey = cfg.storageKey;
 
-const state = { courses: [] };
-const $ = s => document.querySelector(s);
+  function seed() {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (raw) return JSON.parse(raw);
+    } catch (_) {}
+    const demo = [];
+    localStorage.setItem(storageKey, JSON.stringify(demo));
+    return demo;
+  }
 
-function courseImage(course) {
-  if (course.thumbnail) return course.thumbnail;
-  return 'assets/images/logo.png';
-}
+  function getData() { return seed(); }
+  function saveData(data) { localStorage.setItem(storageKey, JSON.stringify(data)); }
 
-function renderCourses() {
-  const q = ($('#courseSearch')?.value || '').trim().toLowerCase();
-  const filter = $('#courseFilter')?.value || 'all';
-  const list = state.courses.filter(c => {
-    const text = `${c.title} ${c.category||''} ${c.description||''}`.toLowerCase();
-    return (!q || text.includes(q)) && (filter === 'all' || (c.category || 'Other') === filter);
-  });
-  const grid = $('#courseGrid'); const empty = $('#courseEmpty');
-  grid.innerHTML = list.map(c => `<article class="course-card"><a href="course.html?id=${encodeURIComponent(c.id)}" class="course-cover"><img src="${escapeAttr(courseImage(c))}" alt=""><span class="cover-badge">${(c.lessons||[]).filter(l=>l.published!==false).length} lessons</span></a><div class="course-card-body"><span class="course-category">${escapeHTML(c.category || 'COURSE')}</span><h3>${escapeHTML(c.title)}</h3><p>${escapeHTML(c.description || 'Learn chapter by chapter with focused lessons.')}</p><a class="text-link" href="course.html?id=${encodeURIComponent(c.id)}">Open course →</a></div></article>`).join('');
-  empty.classList.toggle('hidden', list.length>0);
-}
+  function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+  }
 
-function setFilters() {
-  const filter = $('#courseFilter');
-  const values = [...new Set(state.courses.map(c=>c.category).filter(Boolean))];
-  filter.innerHTML = `<option value="all">All courses</option>` + values.map(v=>`<option value="${escapeAttr(v)}">${escapeHTML(v)}</option>`).join('');
-}
+  function youtubeId(input) {
+    try {
+      const u = new URL(input);
+      if (u.hostname.includes('youtu.be')) return u.pathname.slice(1);
+      if (u.hostname.includes('youtube.com')) {
+        return u.searchParams.get('v') || (u.pathname.startsWith('/embed/') ? u.pathname.split('/embed/')[1] : '');
+      }
+    } catch (_) {}
+    return '';
+  }
 
-function escapeHTML(v='') { return String(v).replace(/[&<>'"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
-function escapeAttr(v='') { return escapeHTML(v); }
+  function normalizeCourse(c) {
+    return {
+      id: c.id || crypto.randomUUID(),
+      name: c.name || 'Untitled Course',
+      subtitle: c.subtitle || '',
+      description: c.description || '',
+      cover: c.cover || '',
+      modules: Array.isArray(c.modules) ? c.modules : []
+    };
+  }
 
-async function init() {
-  if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
-  $('#year').textContent = new Date().getFullYear();
-  $('#menuBtn')?.addEventListener('click',()=>$('#mobileNav').classList.toggle('open'));
-  state.courses = await getCourses(); setFilters(); renderCourses();
-  $('#courseSearch')?.addEventListener('input',renderCourses); $('#courseFilter')?.addEventListener('change',renderCourses);
-}
-init().catch(err=>{ console.error(err); $('#courseGrid').innerHTML=`<div class="error-state">Could not load courses. ${escapeHTML(err.message)}</div>`; });
+  function renderHome() {
+    const grid = document.getElementById('courseGrid');
+    if (!grid) return;
+    const data = getData().map(normalizeCourse);
+    const count = document.getElementById('courseCount');
+    const empty = document.getElementById('emptyState');
+    if (count) count.textContent = `${data.length} Course${data.length === 1 ? '' : 's'}`;
+    grid.innerHTML = '';
+    if (!data.length) { empty?.classList.remove('hidden'); return; }
+    empty?.classList.add('hidden');
+    data.forEach((course, index) => {
+      const card = document.createElement('a');
+      card.className = 'course-card glass-card';
+      card.href = `course.html?id=${encodeURIComponent(course.id)}`;
+      const initials = course.name.split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase() || 'SC';
+      card.innerHTML = `
+        <div class="course-art" style="${course.cover ? `background-image:url('${escapeHtml(course.cover)}')` : ''}">
+          ${course.cover ? '' : `<span>${escapeHtml(initials)}</span>`}
+          <div class="course-art-overlay"><span>OPEN COURSE</span><b>→</b></div>
+        </div>
+        <div class="course-card-body">
+          <div class="course-number">COURSE ${String(index+1).padStart(2,'0')}</div>
+          <h3>${escapeHtml(course.name)}</h3>
+          <p>${escapeHtml(course.subtitle || course.description || 'Video learning course')}</p>
+          <div class="course-meta"><span>${course.modules.length} module${course.modules.length===1?'':'s'}</span><span>▶ Watch</span></div>
+        </div>`;
+      grid.appendChild(card);
+    });
+  }
+
+  window.SayeedCourses = {
+    getData, saveData, youtubeId, escapeHtml, normalizeCourse, renderHome
+  };
+})();
