@@ -1,1 +1,10 @@
-
+{
+  "name": "CourseHub",
+  "short_name": "CourseHub",
+  "description": "Premium Course Library",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#080b0e",
+  "theme_color": "#080b0e",
+  "icons": []
+}
