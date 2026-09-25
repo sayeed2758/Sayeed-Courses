@@ -1,36 +1,83 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
-const categories = ['All Courses', 'Design', 'Development', 'Business', 'Exams', 'School', 'Languages'];
+const CATALOGUE_TOTAL = '3,600+';
+
+const categories = [
+  ['All Courses', '▦', '3,600+'],
+  ['New Added Courses', '◷', '0'],
+  ['Coding & Tech', '</>', '153'],
+  ['AI & Automation', '◈', '100'],
+  ['Upsurge Courses', '↗', '245'],
+  ['Finance & Taxation', '▤', '56'],
+  ['Astrology & Occult', '✣', '754'],
+  ['Fitness & Health', '✚', '63'],
+  ['Dating & Relationships', '♥', '88'],
+  ['Personal Growth & Mindset', '◉', '171'],
+  ['Communication & Languages', '◌', '91'],
+  ['Video Editing & Media', '▮', '125'],
+];
+
 const sortOptions = ['Recommended', 'Newest', 'A — Z', 'Category'];
 
 const courses = Array.from({ length: 24 }, (_, index) => {
-  const category = categories[(index % (categories.length - 1)) + 1];
+  const categoryNames = ['Coding & Tech', 'AI & Automation', 'Finance & Taxation', 'Personal Growth & Mindset'];
+  const palette = ['teal', 'orange', 'purple', 'blue'][index % 4];
   const number = index + 1;
-  const palettes = ['blue', 'violet', 'teal', 'amber'];
   return {
     id: number,
     number,
-    category,
-    title: `${category} ${['Masterclass', 'Complete Guide', 'Pro Bootcamp', 'Essential Course'][index % 4]}`,
+    category: categoryNames[index % categoryNames.length],
+    title: [
+      'Alpha Batch 3.0',
+      'Complete DSA Batch',
+      'AI Automation Mastery',
+      'Personal Growth Blueprint',
+    ][index % 4],
     educator: ['Sayeed Academy', 'Elite Faculty', 'Pro Learning', 'Master Teachers'][index % 4],
     meta: ['2026 Batch', 'Premium', 'Updated 2026', 'New Release'][index % 4],
-    badge: index % 7 === 0 ? 'FEATURED' : index % 4 === 0 ? 'NEW' : 'VERIFIED',
-    palette: palettes[index % palettes.length],
-    description: 'A focused learning path with organised modules, practical resources and easy access.',
+    badge: index % 6 === 0 ? 'NEW' : index % 4 === 0 ? 'FEATURED' : 'VERIFIED',
+    price: [299, 199, 399, 249][index % 4],
+    palette,
+    rating: ['4.8', '4.9', '4.7', '4.9'][index % 4],
+    reviews: [307, 184, 126, 211][index % 4],
+    likes: [73, 58, 91, 46][index % 4],
   };
 });
 
 const faqs = [
-  ['How do I find a course?', 'Use the search field to search by title, educator, category or course number.'],
-  ['Can I filter the catalogue?', 'Yes. Pick a category or use Sort to narrow the library quickly.'],
-  ['Will this become an app?', 'Yes. This project is being prepared as a responsive Progressive Web App as well as a website.'],
-  ['How large can the catalogue become?', 'The final catalogue is designed around a 3,390+ course library and can scale beyond that.'],
-  ['Where will the real course data come from?', 'Later phases will connect this interface to your authorised production course database and admin system.'],
+  {
+    title: 'Courses kahan aur kaise milenge? (Telegram vs Google Drive / Mega)',
+    answer: '⚡ Courses sifr Telegram pe milenge: Yahan koi slow Google Drive ya Mega link nahi diya jata. Access ko simple aur fast rakhne ke liye learning links course-wise manage honge.',
+  },
+  {
+    title: 'Kya courses ZIP / RAR files mein honge ya Direct Videos format mein?',
+    answer: '🎬 Direct Videos format ko priority di jayegi. Complex ZIP ya RAR package ke bajay content ko simple, one-tap learning flow ke liye organise kiya jayega.',
+  },
+  {
+    title: 'Kya channel takedown wagera ho sakta hai? Access kab tak rahega?',
+    answer: '🛡️ Access policy course owner aur authorised provider ki availability par depend karegi. Platform par jo information hogi wahi clearly show ki jayegi; unsupported lifetime guarantees nahi di jayengi.',
+  },
+  {
+    title: 'Can I download the videos and watch them offline?',
+    answer: '📱 Offline availability har course ke authorised delivery method par depend karegi. Jahan download supported hoga, wahi option clearly available hoga.',
+  },
+  {
+    title: 'Course kaise purchase / order karein? (Step-by-Step Purchase Guide)',
+    answer: '🧾 Course open karein → access details check karein → available purchase/request action select karein → payment/order confirmation ke baad authorised access instructions follow karein.',
+  },
+  {
+    title: 'Kya lectures ke sath PDFs, assignments aur notes bhi milenge?',
+    answer: '📚 Course ke available resources par depend karega. Jis course mein PDFs, assignments ya notes honge, unki availability course details mein clearly mention ki jayegi.',
+  },
+  {
+    title: 'Why are the courses priced so cheaply compared to other platforms?',
+    answer: '💡 Pricing course source, licensing, promotions aur delivery model par depend kar sakti hai. Final price har course ke details page par clearly shown hoga.',
+  },
 ];
 
-function Icon({ name, size = 19 }: { name: string; size?: number }) {
+function Icon({ name, size = 20 }: { name: string; size?: number }) {
   const common = { width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
   if (name === 'search') return <svg {...common}><circle cx="11" cy="11" r="6.8"/><path d="m16.2 16.2 4.2 4.2"/></svg>;
   if (name === 'menu') return <svg {...common}><path d="M4 6h16M4 12h16M4 18h16"/></svg>;
@@ -39,22 +86,40 @@ function Icon({ name, size = 19 }: { name: string; size?: number }) {
   if (name === 'help') return <svg {...common}><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.7 2.7 0 1 1 4.5 2c-1.4 1-2 1.5-2 3"/><path d="M12 17.4h.01"/></svg>;
   if (name === 'send') return <svg {...common}><path d="m21 3-7.6 18-3.9-8.5L1 8.6 21 3Z"/><path d="m9.5 12.5 5-5"/></svg>;
   if (name === 'bag') return <svg {...common}><path d="M6.5 8.5h11l1 12h-13l1-12Z"/><path d="M9 8.5V6.7a3 3 0 0 1 6 0v1.8"/></svg>;
+  if (name === 'layers') return <svg {...common}><path d="m12 3 8 4-8 4-8-4 8-4Z"/><path d="m4 12 8 4 8-4"/><path d="m4 17 8 4 8-4"/></svg>;
   if (name === 'chevron') return <svg {...common}><path d="m6 9 6 6 6-6"/></svg>;
-  if (name === 'arrow') return <svg {...common}><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>;
-  if (name === 'spark') return <svg {...common}><path d="m12 3 1.5 5.5L19 10l-5.5 1.5L12 17l-1.5-5.5L5 10l5.5-1.5L12 3Z"/><path d="m19 15 .7 2.3L22 18l-2.3.7L19 21l-.7-2.3L16 18l2.3-.7L19 15Z"/></svg>;
+  if (name === 'mic') return <svg {...common}><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4M8 21h8"/></svg>;
   return null;
+}
+
+function Loader({ done }: { done: () => void }) {
+  useEffect(() => {
+    const timer = window.setTimeout(done, 1550);
+    return () => window.clearTimeout(timer);
+  }, [done]);
+
+  return (
+    <div className="boot-loader">
+      <div className="loader-core">
+        <div className="loader-logo-wrap"><Icon name="spark" size={39} /></div>
+        <div className="loader-brand">SAYEED <span>COURSES</span></div>
+        <div className="loader-subtitle">VIP COURSES HUB</div>
+        <div className="loader-progress"><span /></div>
+        <div className="loader-status"><i /> Loading {CATALOGUE_TOTAL} Courses...</div>
+      </div>
+    </div>
+  );
 }
 
 function CourseArtwork({ course }: { course: (typeof courses)[number] }) {
   return (
     <div className={`course-art ${course.palette}`}>
-      <div className="art-grid" />
-      <div className="art-ring ring-one" />
-      <div className="art-ring ring-two" />
-      <span className="art-number">#{String(course.number).padStart(4, '0')}</span>
-      <span className="art-badge">{course.badge}</span>
-      <div className="art-copy"><small>{course.meta}</small><strong>{course.category}</strong></div>
-      <span className="art-watermark">SAYEED</span>
+      <div className="art-code" aria-hidden="true">0101100101 0010110010 1011010001</div>
+      <div className="art-orb art-orb-one" />
+      <div className="art-orb art-orb-two" />
+      <div className="art-topline"><span>#{String(course.number).padStart(3, '0')}</span><b>₹ {course.price}</b></div>
+      <div className="art-title">{course.title}</div>
+      <div className="art-brand">SAYEED</div>
     </div>
   );
 }
@@ -65,15 +130,17 @@ function CourseCard({ course }: { course: (typeof courses)[number] }) {
     <article className="course-card">
       <CourseArtwork course={course} />
       <div className="course-body">
-        <div className="course-meta"><span>{course.category}</span><span>#{String(course.number).padStart(4, '0')}</span></div>
-        <h3>{course.title}</h3>
-        <p className="course-educator">{course.educator}</p>
-        <p className="course-description">{course.description}</p>
-        <div className="card-actions">
-          <button className={saved ? 'save-button saved' : 'save-button'} type="button" onClick={() => setSaved((value) => !value)}>
-            <span className="save-icon">{saved ? '✓' : '+'}</span>{saved ? 'SAVED' : 'SAVE COURSE'}
-          </button>
-          <button className="study-button" type="button">LET&apos;S STUDY <Icon name="arrow" size={17} /></button>
+        <div className="course-pills">
+          <span className="price-pill">₹{course.price}</span>
+          <span className="rating-pill">★ {course.rating} <small>({course.reviews})</small></span>
+          <span className="category-pill">{course.category}</span>
+        </div>
+        <div className="engagement-row"><span>♥ {course.likes}</span><span>♧ 3</span></div>
+        <h3>{course.number}. {course.title}</h3>
+        <p>{course.educator} · {course.meta}</p>
+        <div className="course-actions">
+          <button className="unlock-button" type="button">↪&nbsp; Unlock Course · ₹{course.price}</button>
+          <button className={saved ? 'cart-button-small saved' : 'cart-button-small'} type="button" onClick={() => setSaved(v => !v)}>{saved ? '✓ Saved' : '🛒 Cart'}</button>
         </div>
       </div>
     </article>
@@ -81,114 +148,176 @@ function CourseCard({ course }: { course: (typeof courses)[number] }) {
 }
 
 export default function HomePage() {
+  const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('All Courses');
   const [sort, setSort] = useState('Recommended');
   const [sortOpen, setSortOpen] = useState(false);
   const [sheet, setSheet] = useState<'category' | 'faq' | 'menu' | 'bag' | null>(null);
-  const [refreshing, setRefreshing] = useState(false);
   const [faqOpen, setFaqOpen] = useState<number | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const result = courses.filter((course) => {
+    let result = courses.filter((course) => {
       const matchesCategory = category === 'All Courses' || course.category === category;
       const haystack = `${course.title} ${course.educator} ${course.category} ${course.number}`.toLowerCase();
       return matchesCategory && (!q || haystack.includes(q));
     });
-    if (sort === 'Newest') return [...result].sort((a, b) => b.number - a.number);
-    if (sort === 'A — Z') return [...result].sort((a, b) => a.title.localeCompare(b.title));
-    if (sort === 'Category') return [...result].sort((a, b) => a.category.localeCompare(b.category));
+    if (sort === 'Newest') result = [...result].sort((a, b) => b.number - a.number);
+    if (sort === 'A — Z') result = [...result].sort((a, b) => a.title.localeCompare(b.title));
+    if (sort === 'Category') result = [...result].sort((a, b) => a.category.localeCompare(b.category));
     return result;
   }, [query, category, sort]);
 
-  async function refreshCatalogue() {
+  function refreshCatalogue() {
     setRefreshing(true);
     setQuery('');
     setCategory('All Courses');
     setSort('Recommended');
     setSortOpen(false);
-    await new Promise((resolve) => setTimeout(resolve, 550));
-    setRefreshing(false);
+    window.setTimeout(() => setRefreshing(false), 650);
   }
 
+  useEffect(() => {
+    document.body.style.overflow = sheet ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [sheet]);
+
+  if (loading) return <Loader done={() => setLoading(false)} />;
+
   return (
-    <main className="shell">
-      <header className="header">
-        <div className="header-inner">
-          <a href="#top" className="brand" aria-label="Sayeed Courses home">
-            <span className="brand-mark"><Icon name="spark" size={19} /></span>
+    <main className="reference-app">
+      <header className="top-header">
+        <div className="top-header-inner">
+          <a href="#top" className="brand-lockup" aria-label="Sayeed Courses home">
+            <span className="brand-mark"><Icon name="spark" size={22} /></span>
             <span className="brand-copy"><strong>SAYEED <i>COURSES</i></strong><small>YOUR NEXT SKILL STARTS HERE</small></span>
           </a>
-          <div className="header-actions">
-            <button className="header-control faq-control" type="button" onClick={() => setSheet('faq')}><Icon name="help" size={18} /><span>FAQs</span></button>
-            <button className="header-control" type="button" onClick={refreshCatalogue} aria-label="Refresh catalogue"><Icon name="refresh" size={19} /></button>
-            <button className="header-control telegram-control" type="button" onClick={() => setSheet('menu')} aria-label="Open quick links"><Icon name="send" size={19} /></button>
-            <button className="header-control bag-control" type="button" onClick={() => setSheet('bag')} aria-label="My courses"><Icon name="bag" size={19} /><b>0</b></button>
-            <button className="header-control" type="button" onClick={() => setSheet('menu')} aria-label="Open menu"><Icon name="menu" size={20} /></button>
+          <div className="top-actions">
+            <button className="app-button" type="button">☁ APP</button>
+            <button className="header-icon-button faq-button" type="button" onClick={() => setSheet('faq')}><Icon name="help" size={20} /><span>FAQs</span></button>
+            <button className="header-icon-button cyan" type="button" onClick={() => setSheet('menu')} aria-label="Telegram"><Icon name="send" size={20} /></button>
+            <button className={refreshing ? 'header-icon-button spinning' : 'header-icon-button'} type="button" onClick={refreshCatalogue} aria-label="Refresh"><Icon name="refresh" size={20} /></button>
+            <button className="header-icon-button menu-button" type="button" onClick={() => setSheet('menu')} aria-label="Menu"><Icon name="menu" size={22} /></button>
           </div>
         </div>
       </header>
 
-      <section id="top" className="hero-section">
-        <div className="hero-grid" aria-hidden="true" />
-        <div className="hero-orb orb-left" aria-hidden="true" />
-        <div className="hero-orb orb-right" aria-hidden="true" />
-        <div className="content hero-content">
+      <section id="top" className="hero-reference">
+        <div className="hero-backdrop-grid" />
+        <div className="hero-shape shape-a" />
+        <div className="hero-shape shape-b" />
+        <div className="hero-inner">
           <span className="hero-kicker">CURIOUS MINDS. ENDLESS POSSIBILITIES.</span>
           <h1>Find your next <em>skill.</em></h1>
           <p>Discover, save and study from one beautifully organised course library.</p>
-          <div className="search-box">
-            <Icon name="search" size={22} />
-            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search course by name or # number..." aria-label="Search course" />
+          <div className="verified-pill"><i /> {CATALOGUE_TOTAL} Verified Courses Available</div>
+          <div className="search-reference">
+            <Icon name="search" size={27} />
+            <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search course by name or # number..." aria-label="Search courses" />
             {query && <button type="button" onClick={() => setQuery('')} aria-label="Clear search"><Icon name="x" size={18} /></button>}
-            <span className="course-count">3,390+</span>
+            <button className="mic-button" type="button" aria-label="Voice search"><Icon name="mic" size={20} /></button>
           </div>
-          <div className="hero-rail"><span>CURATED CATALOGUE</span><i /><span>INSTANT SEARCH</span><i /><span>PWA READY</span></div>
         </div>
       </section>
 
-      <section id="courses" className="content catalogue">
-        <div className="catalogue-heading">
-          <div><span className="section-kicker">THE LIBRARY</span><h2>3,390+ courses <small>to explore</small></h2></div>
-          <button className="category-button" type="button" onClick={() => setSheet('category')}><span>{category}</span><Icon name="chevron" size={17} /></button>
+      <section id="courses" className="catalogue-reference">
+        <div className="library-head">
+          <div><span className="section-kicker">THE LIBRARY</span><h2>{CATALOGUE_TOTAL} courses <small>to explore</small></h2></div>
+          <button className="category-select-reference" type="button" onClick={() => setSheet('category')}><span>{category}</span><Icon name="chevron" size={18} /></button>
         </div>
 
-        <div className="toolbar">
-          <div className="category-chips">
-            {categories.map((item) => <button key={item} type="button" className={item === category ? 'chip active' : 'chip'} onClick={() => setCategory(item)}>{item}</button>)}
-          </div>
-          <div className="sort-wrap">
-            <button className="sort-button" type="button" onClick={() => setSortOpen((value) => !value)}><span>↕ SORT</span><Icon name="chevron" size={16} /></button>
-            {sortOpen && <div className="sort-menu">{sortOptions.map((item) => <button key={item} type="button" className={item === sort ? 'selected' : ''} onClick={() => { setSort(item); setSortOpen(false); }}>{item}<span>{item === sort ? '✓' : ''}</span></button>)}</div>}
+        <div className="chip-row">
+          {['All Courses', 'Coding & Tech', 'AI & Automation', 'Finance & Taxation', 'Personal Growth & Mindset'].map(item => (
+            <button key={item} type="button" className={item === category ? 'library-chip active' : 'library-chip'} onClick={() => setCategory(item)}>{item}</button>
+          ))}
+        </div>
+
+        <div className="sort-bar">
+          <div className="result-count"><strong>{filtered.length}</strong> courses shown</div>
+          <div className="sort-reference-wrap">
+            <button className="sort-reference" type="button" onClick={() => setSortOpen(v => !v)}>↕ Sort <Icon name="chevron" size={15} /></button>
+            {sortOpen && <div className="sort-reference-menu">{sortOptions.map(item => <button key={item} type="button" className={item === sort ? 'selected' : ''} onClick={() => { setSort(item); setSortOpen(false); }}>{item}<span>{item === sort ? '✓' : ''}</span></button>)}</div>}
           </div>
         </div>
 
-        <div className="results-line"><span>{filtered.length} demo courses shown</span><span>{query ? `Searching “${query}”` : category}</span></div>
-        {refreshing && <div className="refresh-banner"><Icon name="refresh" size={16} /> Refreshing catalogue…</div>}
-        <div className="course-grid">{filtered.map((course) => <CourseCard course={course} key={course.id} />)}</div>
-        {!filtered.length && <div className="empty-state"><Icon name="search" size={28} /><h3>No courses found</h3><p>Try another search or reset the filters.</p><button type="button" onClick={() => { setQuery(''); setCategory('All Courses'); }}>RESET FILTERS</button></div>}
-      </section>
-
-      <section id="featured" className="content feature-section">
-        <div className="feature-panel">
-          <div className="feature-copy"><span className="section-kicker">CURATED FOR YOU</span><h2>Premium learning, without the clutter.</h2><p>A spacious catalogue shell that will become the front door to the complete course platform.</p><button type="button" className="feature-link" onClick={() => document.getElementById('courses')?.scrollIntoView({ behavior: 'smooth' })}>EXPLORE THE LIBRARY <Icon name="arrow" size={16} /></button></div>
-          <div className="feature-visual" aria-hidden="true"><div className="feature-card f1"><small>01</small><strong>DISCOVER</strong></div><div className="feature-card f2"><small>02</small><strong>LEARN</strong></div><div className="feature-card f3"><small>03</small><strong>GROW</strong></div></div>
+        <div className="course-grid-reference">
+          {filtered.map(course => <CourseCard key={course.id} course={course} />)}
         </div>
       </section>
 
-      <section id="request" className="content request-section"><div className="request-panel"><div><span className="section-kicker">CAN&apos;T FIND IT?</span><h2>Request a course.</h2><p>The request workflow will be connected to the production database later.</p></div><button type="button">REQUEST COURSE <span>↗</span></button></div></section>
+      <section className="cta-reference">
+        <span className="section-kicker">CAN&apos;T FIND IT?</span>
+        <h2>Request a course.</h2>
+        <p>Tell us what you want to see in the next catalogue update.</p>
+        <button type="button">REQUEST COURSE ↗</button>
+      </section>
 
-      <section id="faq" className="content faq-section"><div className="section-heading"><span className="section-kicker">A LITTLE CLARITY</span><h2>Frequently asked questions.</h2></div><div className="faq-list">{faqs.map(([question, answer], index) => { const open = faqOpen === index; return <div className={open ? 'faq-row open' : 'faq-row'} key={question}><button type="button" onClick={() => setFaqOpen(open ? null : index)}><span>{question}</span><b>{open ? '−' : '+'}</b></button>{open && <p>{answer}</p>}</div>; })}</div></section>
+      <footer className="footer-reference"><strong>SAYEED <i>COURSES</i></strong><span>© 2026 · Premium course hub</span></footer>
 
-      <footer className="footer"><div className="footer-inner"><div><strong>SAYEED <i>COURSES</i></strong><small>YOUR NEXT SKILL STARTS HERE</small></div><div className="footer-links"><a href="#courses">Courses</a><a href="#featured">Featured</a><a href="#request">Request</a><a href="#faq">FAQ</a></div></div><div className="footer-bottom">© 2026 Sayeed Courses · Premium course hub UI foundation</div></footer>
+      {sheet && (
+        <div className="sheet-overlay" role="dialog" aria-modal="true" onMouseDown={(e) => { if (e.target === e.currentTarget) setSheet(null); }}>
+          <aside className="reference-sheet">
+            {sheet === 'category' && (
+              <>
+                <div className="sheet-header"><div className="sheet-title-icon"><Icon name="layers" size={23} /></div><h2>Course Categories</h2><button type="button" onClick={() => setSheet(null)} aria-label="Close"><Icon name="x" size={22} /></button></div>
+                <p className="sheet-intro">Tap a category to filter courses:</p>
+                <div className="category-drawer-list">
+                  {categories.map(([name, symbol, count]) => (
+                    <button key={name} type="button" className={name === category ? 'drawer-category active' : 'drawer-category'} onClick={() => { setCategory(name); setSheet(null); }}>
+                      <span className="drawer-icon">{symbol}</span><strong>{name}</strong><b>{count}</b>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
 
-      {sheet && <div className="overlay" role="dialog" aria-modal="true" onMouseDown={(event) => { if (event.target === event.currentTarget) setSheet(null); }}><aside className="sheet"><button className="sheet-close" type="button" onClick={() => setSheet(null)} aria-label="Close"><Icon name="x" size={19} /></button>
-        {sheet === 'category' && <><span className="section-kicker">EXPLORE YOUR INTERESTS</span><h2>Course categories.</h2><div className="category-list">{categories.map((item) => <button type="button" className={item === category ? 'category-row active' : 'category-row'} key={item} onClick={() => { setCategory(item); setSheet(null); }}><span>{item}</span><b>{item === 'All Courses' ? '3,390+' : '—'}</b></button>)}</div></>}
-        {sheet === 'faq' && <><span className="section-kicker">A LITTLE CLARITY</span><h2>Questions & answers.</h2><div className="faq-list sheet-faq">{faqs.map(([question, answer], index) => { const open = faqOpen === index; return <div className={open ? 'faq-row open' : 'faq-row'} key={question}><button type="button" onClick={() => setFaqOpen(open ? null : index)}><span>{question}</span><b>{open ? '−' : '+'}</b></button>{open && <p>{answer}</p>}</div>; })}</div></>}
-        {sheet === 'menu' && <><span className="section-kicker">KEEP IT SIMPLE</span><h2>Your course hub.</h2><div className="menu-block"><div className="menu-account"><span>ACCOUNT</span><strong>Guest learner</strong><small>Authentication will be connected in the backend phase.</small></div><button type="button" onClick={() => setSheet('category')}><span>Categories</span><b>→</b></button><button type="button" onClick={() => setSheet('faq')}><span>FAQs</span><b>→</b></button><button type="button" onClick={() => setSheet('bag')}><span>My Courses</span><b>0</b></button></div></>}
-        {sheet === 'bag' && <><span className="section-kicker">YOUR NEXT CHAPTER</span><h2>My course shelf.</h2><div className="bag-empty"><Icon name="bag" size={29} /><h3>Your shelf is empty.</h3><p>Save a course to start building your personal learning list.</p><button type="button" onClick={() => setSheet(null)}>BROWSE COURSES</button></div></>}
-      </aside></div>}
+            {sheet === 'faq' && (
+              <>
+                <div className="sheet-header faq-header"><div className="faq-mark">?</div><h2>Frequently Asked<br />Questions (Q&amp;A)</h2><button type="button" onClick={() => setSheet(null)} aria-label="Close"><Icon name="x" size={22} /></button></div>
+                <div className="faq-scroll">
+                  <div className="faq-answer-guide">Delivery, Video Quality, Payment &amp; Access Guidelines:</div>
+                  <button className="collapse-all-reference" type="button" onClick={() => setFaqOpen(null)}>Collapse All&nbsp;⌃</button>
+                  <div className="faq-reference-list">
+                    {faqs.map((faq, index) => {
+                      const open = faqOpen === index;
+                      return (
+                        <div className={open ? 'faq-reference-row open' : 'faq-reference-row'} key={faq.title}>
+                          <button type="button" onClick={() => setFaqOpen(open ? null : index)}>
+                            <span className="faq-number">{String(index + 1).padStart(2, '0')}</span>
+                            <strong>{faq.title}</strong>
+                            <span className="faq-chevron">{open ? '⌃' : '⌄'}</span>
+                          </button>
+                          {open && <div className="faq-answer-card"><h3>{index === 0 ? 'Important Delivery & Access Policy' : 'Answer'}</h3><p>{faq.answer}</p></div>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {sheet === 'menu' && (
+              <>
+                <div className="sheet-header"><div className="sheet-title-icon"><Icon name="menu" size={23} /></div><h2>Your Course Hub</h2><button type="button" onClick={() => setSheet(null)} aria-label="Close"><Icon name="x" size={22} /></button></div>
+                <div className="menu-reference-list">
+                  <button type="button" onClick={() => setSheet('faq')}>❓ FAQs <span>→</span></button>
+                  <button type="button" onClick={() => setSheet('category')}>▦ Categories <span>→</span></button>
+                  <button type="button" onClick={() => setSheet('bag')}>🛍 My Courses <span>0</span></button>
+                </div>
+              </>
+            )}
+
+            {sheet === 'bag' && (
+              <>
+                <div className="sheet-header"><div className="sheet-title-icon"><Icon name="bag" size={23} /></div><h2>My Courses</h2><button type="button" onClick={() => setSheet(null)} aria-label="Close"><Icon name="x" size={22} /></button></div>
+                <div className="bag-reference-empty"><div className="bag-big"><Icon name="bag" size={30} /></div><h3>Your shelf is empty</h3><p>Save courses to start building your learning list.</p><button type="button" onClick={() => setSheet(null)}>BROWSE COURSES</button></div>
+              </>
+            )}
+          </aside>
+        </div>
+      )}
     </main>
   );
 }
