@@ -2,10 +2,10 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
-const CATALOGUE_TOTAL = '3,600+';
+const CATALOGUE_TOTAL = '3,695+';
 
 const categories = [
-  ['All Courses', '▦', '3,600+'],
+  ['All Courses', '▦', '3,695'],
   ['New Added Courses', '◷', '0'],
   ['Coding & Tech', '</>', '153'],
   ['AI & Automation', '◈', '100'],
@@ -132,7 +132,6 @@ function CourseArtwork({ course }: { course: (typeof courses)[number] }) {
       <div className="art-orb art-orb-one" />
       <div className="art-orb art-orb-two" />
       <div className="art-topline"><span>#{String(course.number).padStart(3, '0')}</span><b>₹ {course.price}</b></div>
-      <div className="art-title">{course.title}</div>
       <div className="art-brand">SAYEED</div>
     </div>
   );
@@ -252,10 +251,7 @@ export default function HomePage() {
         <div className="hero-backdrop-grid" />
         <div className="hero-shape shape-a" />
         <div className="hero-shape shape-b" />
-        <div className="hero-inner">
-          <span className="hero-kicker">CURIOUS MINDS. ENDLESS POSSIBILITIES.</span>
-          <h1>Find your next <em>skill.</em></h1>
-          <p>Discover, save and study from one beautifully organised course library.</p>
+        <div className="reference-tools">
           <div className="verified-pill"><i /> {CATALOGUE_TOTAL} Verified Courses Available</div>
           <div className="search-reference">
             <Icon name="search" size={28} />
@@ -263,24 +259,12 @@ export default function HomePage() {
             {query && <button type="button" className="search-clear" onClick={() => setQuery('')} aria-label="Clear search"><Icon name="x" size={18} /></button>}
             <button className="mic-button" type="button" aria-label="Voice search"><Icon name="mic" size={20} /></button>
           </div>
-          <div className="hero-meta"><span>CURATED CATALOGUE</span><b>•</b><span>INSTANT SEARCH</span><b>•</b><span>PWA READY</span></div>
         </div>
       </section>
 
       <section id="courses" className="catalogue-reference">
-        <div className="library-head">
-          <div><span className="section-kicker">THE LIBRARY</span><h2>{CATALOGUE_TOTAL} courses <small>to explore</small></h2></div>
-          <button className="category-select-reference" type="button" onClick={() => setSheet('category')}><span>{category}</span><Icon name="chevron" size={18} /></button>
-        </div>
-
-        <div className="chip-row">
-          {['All Courses', 'Coding & Tech', 'AI & Automation', 'Finance & Taxation', 'Personal Growth & Mindset'].map(item => (
-            <button key={item} type="button" className={item === category ? 'library-chip active' : 'library-chip'} onClick={() => setCategory(item)}>{item}</button>
-          ))}
-        </div>
-
-        <div className="sort-bar">
-          <div className="result-count"><strong>{filtered.length}</strong> courses shown</div>
+        <div className="library-head reference-library-head">
+          <div><h2>All Courses <span>({CATALOGUE_TOTAL.replace('+','')})</span></h2></div>
           <div className="sort-reference-wrap">
             <button className="sort-reference" type="button" onClick={() => setSortOpen(v => !v)}>↕ Sort <Icon name="chevron" size={15} /></button>
             {sortOpen && <div className="sort-reference-menu">{sortOptions.map(item => <button key={item} type="button" className={item === sort ? 'selected' : ''} onClick={() => { setSort(item); setSortOpen(false); }}>{item}<span>{item === sort ? '✓' : ''}</span></button>)}</div>}
@@ -292,7 +276,7 @@ export default function HomePage() {
         </div>
 
         {filtered.length === 0 && (
-          <div className="empty-reference"><strong>No courses found</strong><span>Try another keyword or reset the category.</span><button type="button" onClick={() => { setQuery(''); setCategory('All Courses'); }}>RESET FILTERS</button></div>
+          <div className="empty-reference"><strong>No courses found</strong><span>Try another keyword or reset the search.</span><button type="button" onClick={() => { setQuery(''); setCategory('All Courses'); }}>RESET SEARCH</button></div>
         )}
       </section>
 

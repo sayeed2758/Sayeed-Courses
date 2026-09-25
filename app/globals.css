@@ -188,3 +188,138 @@ a{color:inherit;text-decoration:none}
 }
 
 @media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}.spinning svg,.loader-progress span{animation:none}.app-button,.header-icon-button{transition:none}}
+
+/* =========================================================
+   STEP 6 — REFERENCE MATCH + FINISHING POLISH
+   - Cleaner Kalam handwritten system for readable display text
+   - Compact, stable header with visible APP button
+   - Reference-style top section: verified pill + search only
+   - Removes duplicate category selector/chip layout from home
+   - Course artwork never repeats the course name
+   - 16:9 artwork geometry like the reference cards
+   - Mobile-first spacing and overflow fixes
+   ========================================================= */
+:root{
+  --hand:'Kalam',cursive;
+  --script:'Kalam',cursive;
+}
+
+.top-header-inner{width:min(1240px,calc(100% - 28px));}
+.top-header-inner,.top-actions,.app-button,.header-icon-button{flex-shrink:0}
+.brand-lockup{flex:1 1 auto;min-width:0}
+.brand-copy{min-width:0;overflow:hidden}
+.brand-copy strong{font:700 24px/1.02 var(--hand);letter-spacing:.005em;overflow:hidden;text-overflow:ellipsis}
+.brand-copy small{font:600 7px/1 var(--ui)}
+.top-actions{gap:6px;flex:0 0 auto}
+.app-button{min-width:78px;padding:0 13px;font:700 16px/1 var(--hand)}
+.header-icon-button,.app-button{transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease}
+
+.hero-reference{padding:42px 0 34px;border-bottom:1px solid rgba(94,119,186,.08)}
+.hero-backdrop-grid{opacity:.07;background-size:52px 52px;mask-image:linear-gradient(180deg,#000,transparent 86%)}
+.shape-a{width:610px;height:610px;left:-420px;top:-250px;background:radial-gradient(circle at 62% 50%,rgba(90,106,255,.07),transparent 62%)}
+.shape-b{width:520px;height:520px;right:-350px;bottom:-350px;background:radial-gradient(circle at 35% 35%,rgba(0,222,233,.06),transparent 58%)}
+.reference-tools{position:relative;z-index:2;width:min(980px,calc(100% - 32px));margin:auto;display:flex;flex-direction:column;align-items:center;gap:17px}
+.verified-pill{margin-top:0;padding:10px 17px;font:700 19px/1 var(--hand);white-space:nowrap}
+.search-reference{width:100%;max-width:none;margin-top:0;min-height:72px;border-radius:20px}
+.search-reference input{font:600 23px/1 var(--hand)}
+.mic-button{width:51px;height:51px;flex:0 0 51px;border-radius:14px}
+
+.catalogue-reference{padding:30px 0 28px}
+.reference-library-head{align-items:center!important;gap:16px}
+.reference-library-head h2{margin:0;color:#f6f8fc;font:700 clamp(29px,4.8vw,42px)/1.05 var(--hand);letter-spacing:-.02em}
+.reference-library-head h2 span{color:#8d99ae;font-size:.72em;font-weight:600}
+.sort-reference-wrap{position:relative;flex:0 0 auto}
+.sort-reference{height:52px;min-width:124px;padding:0 15px;border-radius:15px;font:700 17px/1 var(--hand);background:#0c1728}
+.course-grid-reference{grid-template-columns:repeat(2,minmax(0,1fr));gap:19px;margin-top:19px}
+.course-card{border-radius:24px;background:#07101e;box-shadow:0 22px 56px rgba(0,0,0,.26),inset 0 1px 0 rgba(255,255,255,.035)}
+.course-art{height:auto;aspect-ratio:16/9;min-height:0}
+.art-code{opacity:.30;top:31px;left:34px}
+.art-topline{inset:29px 28px auto}
+.art-topline span{font:700 27px/1 var(--hand)}
+.art-topline b{padding:12px 18px;border-radius:15px;font:700 23px/1 var(--hand)}
+.art-brand{right:29px;bottom:24px;font:700 19px/1 var(--hand);letter-spacing:.18em}
+.course-body{padding:17px 17px 18px}
+.course-pills{gap:9px}
+.price-pill,.rating-pill,.category-pill,.engagement-row span{font-family:var(--hand);font-weight:700}
+.course-body h3{font:700 30px/1.08 var(--hand)}
+.course-body>p{font:600 13px/1.45 var(--ui)}
+.unlock-button{font:700 19px/1 var(--hand)}
+.cart-button-small{font:700 16px/1 var(--hand)}
+
+.cta-reference h2,.footer-reference strong{font-family:var(--hand)}
+
+@media (max-width:900px){
+  .course-grid-reference{grid-template-columns:1fr}
+}
+
+@media (max-width:760px){
+  .top-header-inner,.catalogue-reference,.cta-reference,.footer-reference{width:calc(100% - 18px)}
+  .top-header-inner{min-height:66px;gap:8px}
+  .brand-logo-image{width:42px;height:42px;flex-basis:42px}
+  .brand-copy strong{font-size:19px}
+  .brand-copy small{font-size:6.5px}
+  .top-actions{gap:4px}
+  .app-button{height:41px;min-width:47px;padding:0 11px;border-radius:12px}
+  .app-button span{display:inline}
+  .header-icon-button{width:41px;height:41px;border-radius:12px}
+  .faq-button{width:auto!important;min-width:41px!important;padding:0 9px!important}
+  .faq-button span{display:inline}
+
+  .hero-reference{padding:38px 0 30px}
+  .reference-tools{width:calc(100% - 18px);gap:15px}
+  .verified-pill{font-size:16px;padding:10px 15px}
+  .search-reference{min-height:66px;border-radius:19px;padding-left:15px}
+  .search-reference input{font-size:18px}
+  .mic-button{width:46px;height:46px;flex-basis:46px;border-radius:13px}
+
+  .catalogue-reference{padding-top:27px}
+  .reference-library-head{flex-direction:row!important;align-items:center!important;justify-content:space-between!important}
+  .reference-library-head h2{font-size:30px;white-space:nowrap}
+  .sort-reference{height:50px;min-width:112px;font-size:16px}
+  .course-grid-reference{gap:15px;margin-top:16px}
+  .course-card{border-radius:22px}
+  .course-body{padding:15px 15px 16px}
+  .course-body h3{font-size:28px}
+  .course-body>p{font-size:12px}
+  .unlock-button{min-height:54px;font-size:18px}
+  .cart-button-small{min-width:101px;font-size:16px}
+  .art-topline{inset:17px 17px auto}
+  .art-topline span{font-size:21px}
+  .art-topline b{padding:10px 15px;font-size:20px;border-radius:13px}
+  .art-code{left:22px;top:21px;font-size:14px}
+  .art-brand{right:20px;bottom:18px;font-size:15px}
+}
+
+@media (max-width:500px){
+  .brand-copy strong{font-size:18px}
+  .brand-copy small{display:none}
+  .app-button,.header-icon-button{width:39px;height:39px;min-width:39px}
+  .app-button span,.faq-button span{display:none}
+  .app-button{padding:0}
+  .faq-button{padding:0!important}
+  .hero-reference{padding-top:34px}
+  .verified-pill{font-size:14px}
+  .search-reference{min-height:62px}
+  .search-reference input{font-size:16px}
+  .mic-button{width:43px;height:43px;flex-basis:43px}
+  .reference-library-head h2{font-size:28px}
+  .sort-reference{height:48px;min-width:104px;font-size:15px}
+  .course-art{aspect-ratio:16/9}
+  .course-body h3{font-size:27px}
+}
+
+@media (max-width:390px){
+  .top-header-inner{width:calc(100% - 12px)}
+  .brand-logo-image{width:37px;height:37px;flex-basis:37px}
+  .brand-copy strong{font-size:17px}
+  .top-actions{gap:2px}
+  .app-button,.header-icon-button{width:36px;height:36px;min-width:36px}
+  .reference-tools{width:calc(100% - 12px)}
+  .verified-pill{font-size:13px;padding:9px 12px}
+  .search-reference{min-height:59px}
+  .reference-library-head h2{font-size:26px}
+  .sort-reference{height:46px;min-width:98px;font-size:14px}
+  .course-body h3{font-size:25px}
+  .unlock-button{font-size:15px}
+  .cart-button-small{min-width:92px;font-size:13px}
+}
