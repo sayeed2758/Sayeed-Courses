@@ -1,10 +1,9 @@
 {
-  "name": "CourseHub",
-  "short_name": "CourseHub",
-  "description": "Premium Course Library",
+  "name": "Sayeed Courses",
+  "short_name": "Sayeed Courses",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#080b0e",
-  "theme_color": "#080b0e",
-  "icons": []
+  "background_color": "#08090b",
+  "theme_color": "#08090b",
+  "description": "Premium course discovery and learning hub."
 }
