@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sayeed-courses-shell-v4';
+const CACHE_NAME = 'sayeed-courses-shell-v5';
 const STATIC_ASSETS = ['/manifest.webmanifest', '/shahid-logo.png'];
 
 self.addEventListener('install', event => {
