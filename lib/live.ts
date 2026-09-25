@@ -15,16 +15,16 @@ export type LiveVoteState = {
 export type RemoteVote = LiveVoteState & { course_id: number };
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/\/$/, '');
-const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const SUPABASE_PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
 export function isLiveBackendConfigured() {
-  return Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
+  return Boolean(SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY);
 }
 
 function headers(extra: HeadersInit = {}) {
   return {
-    apikey: SUPABASE_ANON_KEY || '',
-    Authorization: `Bearer ${SUPABASE_ANON_KEY || ''}`,
+    apikey: SUPABASE_PUBLISHABLE_KEY || '',
+    Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY || ''}`,
     'Content-Type': 'application/json',
     ...extra,
   };
