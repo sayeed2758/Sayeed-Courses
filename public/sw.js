@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sayeed-courses-shell-v5';
+const CACHE_NAME = 'sayeed-courses-shell-v6';
 const STATIC_ASSETS = ['/manifest.webmanifest', '/shahid-logo.png'];
 
 self.addEventListener('install', event => {
@@ -17,10 +17,12 @@ self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin) return;
+
   if (event.request.mode === 'navigate') {
     event.respondWith(fetch(event.request).catch(() => caches.match('/')));
     return;
   }
+
   event.respondWith(
     caches.match(event.request).then(cached => cached || fetch(event.request).then(response => {
       if (response.ok && ['script','style','image','font'].includes(event.request.destination)) {
