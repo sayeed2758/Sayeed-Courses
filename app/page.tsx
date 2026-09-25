@@ -25,6 +25,7 @@ const courses = Array.from({ length: 24 }, (_, index) => {
   const categoryNames = ['Coding & Tech', 'AI & Automation', 'Finance & Taxation', 'Personal Growth & Mindset'];
   const palette = ['teal', 'orange', 'purple', 'blue'][index % 4];
   const number = index + 1;
+  const rating = (4 + (((index * 7 + 3) % 11) / 10)).toFixed(1);
   return {
     id: number,
     number,
@@ -40,9 +41,10 @@ const courses = Array.from({ length: 24 }, (_, index) => {
     badge: index % 6 === 0 ? 'NEW' : index % 4 === 0 ? 'FEATURED' : 'VERIFIED',
     price: [299, 199, 399, 249][index % 4],
     palette,
-    rating: ['4.8', '4.9', '4.7', '4.9'][index % 4],
-    reviews: [307, 184, 126, 211][index % 4],
-    likes: [73, 58, 91, 46][index % 4],
+    rating,
+    reviews: 120 + ((index * 41) % 260),
+    likes: 46 + ((index * 27) % 90),
+    dislikes: 2 + ((index * 11) % 6),
   };
 });
 
@@ -137,9 +139,19 @@ function CourseArtwork({ course }: { course: (typeof courses)[number] }) {
   );
 }
 
-function CourseCard({ course }: { course: (typeof courses)[number] }) {
-  const [saved, setSaved] = useState(false);
-
+function CourseCard({
+  course,
+  vote,
+  onVote,
+  inCart,
+  onCartToggle,
+}: {
+  course: (typeof courses)[number];
+  vote: { likes: number; dislikes: number; userVote: 'like' | 'dislike' | null };
+  onVote: (id: number, next: 'like' | 'dislike') => void;
+  inCart: boolean;
+  onCartToggle: (id: number) => void;
+}) {
   return (
     <article className="course-card">
       <CourseArtwork course={course} />
@@ -149,12 +161,40 @@ function CourseCard({ course }: { course: (typeof courses)[number] }) {
           <span className="rating-pill">★ {course.rating} <small>({course.reviews})</small></span>
           <span className="category-pill">&lt;/&gt; {course.category}</span>
         </div>
-        <div className="engagement-row"><span>♥ {course.likes}</span><span>♧ 3</span></div>
+
+        <div className="engagement-row" aria-label={`Reactions for ${course.title}`}>
+          <button
+            type="button"
+            className={vote.userVote === 'like' ? 'reaction-button like active' : 'reaction-button like'}
+            onClick={() => onVote(course.id, 'like')}
+            aria-pressed={vote.userVote === 'like'}
+            aria-label={`Like ${course.title}`}
+          >
+            <span>{vote.userVote === 'like' ? '✓' : '👍'}</span> {vote.likes}
+          </button>
+          <button
+            type="button"
+            className={vote.userVote === 'dislike' ? 'reaction-button dislike active' : 'reaction-button dislike'}
+            onClick={() => onVote(course.id, 'dislike')}
+            aria-pressed={vote.userVote === 'dislike'}
+            aria-label={`Dislike ${course.title}`}
+          >
+            <span>{vote.userVote === 'dislike' ? '✕' : '👎'}</span> {vote.dislikes}
+          </button>
+        </div>
+
         <h3>{course.number}. {course.title}</h3>
         <p>{course.educator} · {course.meta}</p>
         <div className="course-actions">
           <button className="unlock-button" type="button">↪&nbsp; Unlock Course · ₹{course.price}</button>
-          <button className={saved ? 'cart-button-small saved' : 'cart-button-small'} type="button" onClick={() => setSaved(v => !v)}>{saved ? '✓ Saved' : '🛒 Cart'}</button>
+          <button
+            className={inCart ? 'cart-button-small saved' : 'cart-button-small'}
+            type="button"
+            onClick={() => onCartToggle(course.id)}
+            aria-pressed={inCart}
+          >
+            {inCart ? '✓ Saved' : '🛒 Cart'}
+          </button>
         </div>
       </div>
     </article>
@@ -172,8 +212,21 @@ export default function HomePage() {
   const [refreshing, setRefreshing] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<Event | null>(null);
   const [installHint, setInstallHint] = useState('');
+  const [cartIds, setCartIds] = useState<number[]>([]);
+  const [votes, setVotes] = useState<Record<number, { likes: number; dislikes: number; userVote: 'like' | 'dislike' | null }>>({});
 
   useEffect(() => {
+    try {
+      const savedCart = JSON.parse(window.localStorage.getItem('sayeed_courses_cart_v1') || '[]');
+      if (Array.isArray(savedCart)) setCartIds(savedCart.filter((id): id is number => Number.isInteger(id)));
+
+      const savedVotes = JSON.parse(window.localStorage.getItem('sayeed_courses_votes_v2') || '{}');
+      if (savedVotes && typeof savedVotes === 'object') setVotes(savedVotes);
+    } catch {
+      setCartIds([]);
+      setVotes({});
+    }
+
     const handleBeforeInstall = (event: Event) => {
       event.preventDefault?.();
       setDeferredPrompt(event);
@@ -199,6 +252,49 @@ export default function HomePage() {
     if (sort === 'Category') result = [...result].sort((a, b) => a.category.localeCompare(b.category));
     return result;
   }, [query, category, sort]);
+
+
+  function getVote(id: number) {
+    const course = courses.find(item => item.id === id);
+    const current = votes[id];
+    return current || { likes: course?.likes || 0, dislikes: course?.dislikes || 0, userVote: null };
+  }
+
+  function handleVote(id: number, next: 'like' | 'dislike') {
+    const current = getVote(id);
+    let likes = current.likes;
+    let dislikes = current.dislikes;
+    let userVote: 'like' | 'dislike' | null = current.userVote;
+
+    if (userVote === next) {
+      if (next === 'like') likes = Math.max(0, likes - 1);
+      else dislikes = Math.max(0, dislikes - 1);
+      userVote = null;
+    } else {
+      if (userVote === 'like') likes = Math.max(0, likes - 1);
+      if (userVote === 'dislike') dislikes = Math.max(0, dislikes - 1);
+      if (next === 'like') likes += 1;
+      else dislikes += 1;
+      userVote = next;
+    }
+
+    const nextVotes = { ...votes, [id]: { likes, dislikes, userVote } };
+    setVotes(nextVotes);
+    window.localStorage.setItem('sayeed_courses_votes_v2', JSON.stringify(nextVotes));
+  }
+
+  function toggleCart(id: number) {
+    setCartIds(current => {
+      const next = current.includes(id) ? current.filter(item => item !== id) : [...current, id];
+      window.localStorage.setItem('sayeed_courses_cart_v1', JSON.stringify(next));
+      return next;
+    });
+  }
+
+  const cartCourses = cartIds
+    .map(id => courses.find(course => course.id === id))
+    .filter((course): course is (typeof courses)[number] => Boolean(course));
+  const cartTotal = cartCourses.reduce((sum, course) => sum + course.price, 0);
 
   function refreshCatalogue() {
     setRefreshing(true);
@@ -272,7 +368,16 @@ export default function HomePage() {
         </div>
 
         <div className="course-grid-reference">
-          {filtered.map(course => <CourseCard key={course.id} course={course} />)}
+          {filtered.map(course => (
+            <CourseCard
+              key={course.id}
+              course={course}
+              vote={getVote(course.id)}
+              onVote={handleVote}
+              inCart={cartIds.includes(course.id)}
+              onCartToggle={toggleCart}
+            />
+          ))}
         </div>
 
         {filtered.length === 0 && (
@@ -339,7 +444,7 @@ export default function HomePage() {
                 <div className="menu-reference-list">
                   <button type="button" onClick={() => setSheet('faq')}>❓ FAQs <span>→</span></button>
                   <button type="button" onClick={() => setSheet('category')}>▦ Categories <span>→</span></button>
-                  <button type="button" onClick={() => setSheet('bag')}>🛍 My Courses <span>0</span></button>
+                  <button type="button" onClick={() => setSheet('bag')}>🛒 My Cart <span>{cartCourses.length}</span></button>
                   <button type="button" onClick={handleInstall}>⬇ Install App <span>→</span></button>
                 </div>
               </>
@@ -347,8 +452,26 @@ export default function HomePage() {
 
             {sheet === 'bag' && (
               <>
-                <div className="sheet-header"><div className="sheet-title-icon"><Icon name="bag" size={23} /></div><h2>My Courses</h2><button type="button" onClick={() => setSheet(null)} aria-label="Close"><Icon name="x" size={22} /></button></div>
-                <div className="bag-reference-empty"><div className="bag-big"><Icon name="bag" size={30} /></div><h3>Your shelf is empty</h3><p>Save courses to start building your learning list.</p><button type="button" onClick={() => setSheet(null)}>BROWSE COURSES</button></div>
+                <div className="sheet-header"><div className="sheet-title-icon"><Icon name="bag" size={23} /></div><h2>My Cart</h2><button type="button" onClick={() => setSheet(null)} aria-label="Close"><Icon name="x" size={22} /></button></div>
+                {cartCourses.length === 0 ? (
+                  <div className="bag-reference-empty"><div className="bag-big"><Icon name="bag" size={30} /></div><h3>Your cart is empty</h3><p>Save courses from the catalogue and they will appear here with a live total.</p><button type="button" onClick={() => setSheet(null)}>BROWSE COURSES</button></div>
+                ) : (
+                  <div className="cart-reference">
+                    <div className="cart-summary">
+                      <div><small>{cartCourses.length} {cartCourses.length === 1 ? 'course' : 'courses'} saved</small><strong>₹{cartTotal.toLocaleString('en-IN')}</strong></div>
+                      <span>LIVE TOTAL</span>
+                    </div>
+                    <div className="cart-list">
+                      {cartCourses.map(course => (
+                        <div className="cart-row" key={course.id}>
+                          <div><small>#{String(course.number).padStart(3, '0')} · {course.category}</small><strong>{course.title}</strong></div>
+                          <div className="cart-row-actions"><b>₹{course.price}</b><button type="button" onClick={() => toggleCart(course.id)} aria-label={`Remove ${course.title}`}>✕</button></div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="cart-grand-total"><span>Total</span><strong>₹{cartTotal.toLocaleString('en-IN')}</strong></div>
+                  </div>
+                )}
               </>
             )}
           </aside>
