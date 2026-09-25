@@ -49,59 +49,73 @@ const courses = Array.from({ length: 24 }, (_, index) => {
 const faqs = [
   {
     title: 'Courses kahan aur kaise milenge? (Telegram vs Google Drive / Mega)',
-    answer: '⚡ Courses sifr Telegram pe milenge: Yahan koi slow Google Drive ya Mega link nahi diya jata. Access ko simple aur fast rakhne ke liye learning links course-wise manage honge.',
+    answer: '⚡ Courses ko authorised delivery method ke through simple learning flow mein provide kiya jayega. Course detail page par jo access method listed hoga, wahi follow karein.',
   },
   {
     title: 'Kya courses ZIP / RAR files mein honge ya Direct Videos format mein?',
-    answer: '🎬 Direct Videos format ko priority di jayegi. Complex ZIP ya RAR package ke bajay content ko simple, one-tap learning flow ke liye organise kiya jayega.',
+    answer: '🎬 Jahan direct video delivery available hogi, wahan content ko one-tap learning flow mein organise kiya jayega. Course details mein available format clearly mention hoga.',
   },
   {
     title: 'Kya channel takedown wagera ho sakta hai? Access kab tak rahega?',
-    answer: '🛡️ Access policy course owner aur authorised provider ki availability par depend karegi. Platform par jo information hogi wahi clearly show ki jayegi; unsupported lifetime guarantees nahi di jayengi.',
+    answer: '🛡️ Access authorised provider aur course availability par depend karta hai. Platform par jo current access policy listed hogi, wahi reliable reference hogi.',
   },
   {
     title: 'Can I download the videos and watch them offline?',
-    answer: '📱 Offline availability har course ke authorised delivery method par depend karegi. Jahan download supported hoga, wahi option clearly available hoga.',
+    answer: '📱 Offline viewing har course ke delivery method par depend karegi. Jahan download permitted aur supported hoga, wahi option clearly show kiya jayega.',
   },
   {
     title: 'Course kaise purchase / order karein? (Step-by-Step Purchase Guide)',
-    answer: '🧾 Course open karein → access details check karein → available purchase/request action select karein → payment/order confirmation ke baad authorised access instructions follow karein.',
+    answer: '🧾 Course open karein → available access details check karein → purchase/request action follow karein → confirmation ke baad authorised access instructions use karein.',
   },
   {
     title: 'Kya lectures ke sath PDFs, assignments aur notes bhi milenge?',
-    answer: '📚 Course ke available resources par depend karega. Jis course mein PDFs, assignments ya notes honge, unki availability course details mein clearly mention ki jayegi.',
+    answer: '📚 Har course ka resource bundle alag ho sakta hai. PDFs, assignments aur notes available honge to course details mein clearly listed honge.',
   },
   {
     title: 'Why are the courses priced so cheaply compared to other platforms?',
-    answer: '💡 Pricing course source, licensing, promotions aur delivery model par depend kar sakti hai. Final price har course ke details page par clearly shown hoga.',
+    answer: '💡 Pricing source, promotions, licensing and delivery model par depend kar sakti hai. Final price har course ke card/details section mein clearly shown hoga.',
   },
 ];
 
 function Icon({ name, size = 20 }: { name: string; size?: number }) {
-  const common = { width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
-  if (name === 'search') return <svg {...common}><circle cx="11" cy="11" r="6.8"/><path d="m16.2 16.2 4.2 4.2"/></svg>;
-  if (name === 'menu') return <svg {...common}><path d="M4 6h16M4 12h16M4 18h16"/></svg>;
-  if (name === 'x') return <svg {...common}><path d="m6 6 12 12M18 6 6 18"/></svg>;
-  if (name === 'refresh') return <svg {...common}><path d="M20 11a8.5 8.5 0 0 0-14.7-5L4 8"/><path d="M4 4v4h4"/><path d="M4 13a8.5 8.5 0 0 0 14.7 5L20 16"/><path d="M20 20v-4h-4"/></svg>;
-  if (name === 'help') return <svg {...common}><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.7 2.7 0 1 1 4.5 2c-1.4 1-2 1.5-2 3"/><path d="M12 17.4h.01"/></svg>;
-  if (name === 'send') return <svg {...common}><path d="m21 3-7.6 18-3.9-8.5L1 8.6 21 3Z"/><path d="m9.5 12.5 5-5"/></svg>;
-  if (name === 'bag') return <svg {...common}><path d="M6.5 8.5h11l1 12h-13l1-12Z"/><path d="M9 8.5V6.7a3 3 0 0 1 6 0v1.8"/></svg>;
-  if (name === 'layers') return <svg {...common}><path d="m12 3 8 4-8 4-8-4 8-4Z"/><path d="m4 12 8 4 8-4"/><path d="m4 17 8 4 8-4"/></svg>;
-  if (name === 'chevron') return <svg {...common}><path d="m6 9 6 6 6-6"/></svg>;
-  if (name === 'mic') return <svg {...common}><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4M8 21h8"/></svg>;
+  const common = {
+    width: size,
+    height: size,
+    viewBox: '0 0 24 24',
+    fill: 'none',
+    stroke: 'currentColor',
+    strokeWidth: 1.8,
+    strokeLinecap: 'round' as const,
+    strokeLinejoin: 'round' as const,
+  };
+
+  if (name === 'search') return <svg {...common}><circle cx="11" cy="11" r="6.8" /><path d="m16.2 16.2 4.2 4.2" /></svg>;
+  if (name === 'menu') return <svg {...common}><path d="M4 6h16M4 12h16M4 18h16" /></svg>;
+  if (name === 'x') return <svg {...common}><path d="m6 6 12 12M18 6 6 18" /></svg>;
+  if (name === 'refresh') return <svg {...common}><path d="M20 11a8.5 8.5 0 0 0-14.7-5L4 8" /><path d="M4 4v4h4" /><path d="M4 13a8.5 8.5 0 0 0 14.7 5L20 16" /><path d="M20 20v-4h-4" /></svg>;
+  if (name === 'help') return <svg {...common}><circle cx="12" cy="12" r="9" /><path d="M9.5 9a2.7 2.7 0 1 1 4.5 2c-1.4 1-2 1.5-2 3" /><path d="M12 17.4h.01" /></svg>;
+  if (name === 'send') return <svg {...common}><path d="m21 3-7.6 18-3.9-8.5L1 8.6 21 3Z" /><path d="m9.5 12.5 5-5" /></svg>;
+  if (name === 'bag') return <svg {...common}><path d="M6.5 8.5h11l1 12h-13l1-12Z" /><path d="M9 8.5V6.7a3 3 0 0 1 6 0v1.8" /></svg>;
+  if (name === 'layers') return <svg {...common}><path d="m12 3 8 4-8 4-8-4 8-4Z" /><path d="m4 12 8 4 8-4" /><path d="m4 17 8 4 8-4" /></svg>;
+  if (name === 'chevron') return <svg {...common}><path d="m6 9 6 6 6-6" /></svg>;
+  if (name === 'mic') return <svg {...common}><rect x="9" y="3" width="6" height="11" rx="3" /><path d="M6 11a6 6 0 0 0 12 0M12 17v4M8 21h8" /></svg>;
+  if (name === 'spark') return <svg {...common}><path d="M12 2.8l1.65 5.55L19.2 10l-5.55 1.65L12 17.2l-1.65-5.55L4.8 10l5.55-1.65L12 2.8Z" /><path d="M18.4 15.6l.7 2.2 2.2.7-2.2.7-.7 2.2-.7-2.2-2.2-.7 2.2-.7.7-2.2Z" /></svg>;
+  if (name === 'download') return <svg {...common}><path d="M12 3v11" /><path d="m7.5 10.5 4.5 4.5 4.5-4.5" /><path d="M5 20h14" /></svg>;
   return null;
 }
 
 function Loader({ done }: { done: () => void }) {
   useEffect(() => {
-    const timer = window.setTimeout(done, 1550);
+    const timer = window.setTimeout(done, 1750);
     return () => window.clearTimeout(timer);
   }, [done]);
 
   return (
     <div className="boot-loader">
       <div className="loader-core">
-        <div className="loader-logo-wrap"><Icon name="spark" size={39} /></div>
+        <div className="loader-logo-wrap">
+          <img src="/shahid-logo.png" alt="Sayeed logo" />
+        </div>
         <div className="loader-brand">SAYEED <span>COURSES</span></div>
         <div className="loader-subtitle">VIP COURSES HUB</div>
         <div className="loader-progress"><span /></div>
@@ -126,6 +140,7 @@ function CourseArtwork({ course }: { course: (typeof courses)[number] }) {
 
 function CourseCard({ course }: { course: (typeof courses)[number] }) {
   const [saved, setSaved] = useState(false);
+
   return (
     <article className="course-card">
       <CourseArtwork course={course} />
@@ -133,7 +148,7 @@ function CourseCard({ course }: { course: (typeof courses)[number] }) {
         <div className="course-pills">
           <span className="price-pill">₹{course.price}</span>
           <span className="rating-pill">★ {course.rating} <small>({course.reviews})</small></span>
-          <span className="category-pill">{course.category}</span>
+          <span className="category-pill">&lt;/&gt; {course.category}</span>
         </div>
         <div className="engagement-row"><span>♥ {course.likes}</span><span>♧ 3</span></div>
         <h3>{course.number}. {course.title}</h3>
@@ -156,6 +171,22 @@ export default function HomePage() {
   const [sheet, setSheet] = useState<'category' | 'faq' | 'menu' | 'bag' | null>(null);
   const [faqOpen, setFaqOpen] = useState<number | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<Event | null>(null);
+  const [installHint, setInstallHint] = useState('');
+
+  useEffect(() => {
+    const handleBeforeInstall = (event: Event) => {
+      event.preventDefault?.();
+      setDeferredPrompt(event);
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
+
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+  }, []);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -179,6 +210,18 @@ export default function HomePage() {
     window.setTimeout(() => setRefreshing(false), 650);
   }
 
+  async function handleInstall() {
+    if (deferredPrompt) {
+      const promptEvent = deferredPrompt as Event & { prompt?: () => Promise<void>; userChoice?: Promise<{ outcome: string }> };
+      await promptEvent.prompt?.();
+      await promptEvent.userChoice?.catch(() => undefined);
+      setDeferredPrompt(null);
+      return;
+    }
+    setInstallHint('Open your browser menu and choose “Add to Home screen” or “Install app”.');
+    window.setTimeout(() => setInstallHint(''), 4200);
+  }
+
   useEffect(() => {
     document.body.style.overflow = sheet ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
@@ -191,11 +234,12 @@ export default function HomePage() {
       <header className="top-header">
         <div className="top-header-inner">
           <a href="#top" className="brand-lockup" aria-label="Sayeed Courses home">
-            <span className="brand-mark"><Icon name="spark" size={22} /></span>
+            <span className="brand-logo-image"><img src="/shahid-logo.png" alt="Sayeed logo" /></span>
             <span className="brand-copy"><strong>SAYEED <i>COURSES</i></strong><small>YOUR NEXT SKILL STARTS HERE</small></span>
           </a>
+
           <div className="top-actions">
-            <button className="app-button" type="button">☁ APP</button>
+            <button className="app-button" type="button" onClick={handleInstall}><Icon name="download" size={18} /><span>APP</span></button>
             <button className="header-icon-button faq-button" type="button" onClick={() => setSheet('faq')}><Icon name="help" size={20} /><span>FAQs</span></button>
             <button className="header-icon-button cyan" type="button" onClick={() => setSheet('menu')} aria-label="Telegram"><Icon name="send" size={20} /></button>
             <button className={refreshing ? 'header-icon-button spinning' : 'header-icon-button'} type="button" onClick={refreshCatalogue} aria-label="Refresh"><Icon name="refresh" size={20} /></button>
@@ -214,11 +258,12 @@ export default function HomePage() {
           <p>Discover, save and study from one beautifully organised course library.</p>
           <div className="verified-pill"><i /> {CATALOGUE_TOTAL} Verified Courses Available</div>
           <div className="search-reference">
-            <Icon name="search" size={27} />
+            <Icon name="search" size={28} />
             <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search course by name or # number..." aria-label="Search courses" />
-            {query && <button type="button" onClick={() => setQuery('')} aria-label="Clear search"><Icon name="x" size={18} /></button>}
+            {query && <button type="button" className="search-clear" onClick={() => setQuery('')} aria-label="Clear search"><Icon name="x" size={18} /></button>}
             <button className="mic-button" type="button" aria-label="Voice search"><Icon name="mic" size={20} /></button>
           </div>
+          <div className="hero-meta"><span>CURATED CATALOGUE</span><b>•</b><span>INSTANT SEARCH</span><b>•</b><span>PWA READY</span></div>
         </div>
       </section>
 
@@ -245,6 +290,10 @@ export default function HomePage() {
         <div className="course-grid-reference">
           {filtered.map(course => <CourseCard key={course.id} course={course} />)}
         </div>
+
+        {filtered.length === 0 && (
+          <div className="empty-reference"><strong>No courses found</strong><span>Try another keyword or reset the category.</span><button type="button" onClick={() => { setQuery(''); setCategory('All Courses'); }}>RESET FILTERS</button></div>
+        )}
       </section>
 
       <section className="cta-reference">
@@ -255,6 +304,8 @@ export default function HomePage() {
       </section>
 
       <footer className="footer-reference"><strong>SAYEED <i>COURSES</i></strong><span>© 2026 · Premium course hub</span></footer>
+
+      {installHint && <div className="install-hint" role="status">{installHint}</div>}
 
       {sheet && (
         <div className="sheet-overlay" role="dialog" aria-modal="true" onMouseDown={(e) => { if (e.target === e.currentTarget) setSheet(null); }}>
@@ -305,6 +356,7 @@ export default function HomePage() {
                   <button type="button" onClick={() => setSheet('faq')}>❓ FAQs <span>→</span></button>
                   <button type="button" onClick={() => setSheet('category')}>▦ Categories <span>→</span></button>
                   <button type="button" onClick={() => setSheet('bag')}>🛍 My Courses <span>0</span></button>
+                  <button type="button" onClick={handleInstall}>⬇ Install App <span>→</span></button>
                 </div>
               </>
             )}
