@@ -1,21 +1,26 @@
-# Sayeed Courses — Step 1 UI Foundation
+# Sayeed Courses — Step 2
 
-Fresh project. This phase contains only the front-end foundation: premium responsive layout, sample catalogue, search, sort, category filter, request CTA, FAQ accordion and PWA manifest foundation.
+Premium UI shell for the new Sayeed Courses project.
 
-## Intentionally not connected yet
-- Production database
-- Real 3,390+ records
-- Admin authentication
-- Analytics
-- Bulk import
-- Real course links
-- Notifications backend
+## Upload structure
 
-## Run
+Upload the contents of this folder directly into the GitHub repository root.
+Do not upload the outer folder itself.
 
-```bash
-npm install
-npm run dev
-```
+## Step 2 scope
 
-Then open the local Next.js URL.
+- Working Next.js App Router foundation
+- Premium responsive header
+- Sample-inspired handwritten typography
+- Large course search
+- Category chips + category sheet
+- Sort menu
+- Refresh interaction
+- 24 demo course cards
+- Save-course interaction
+- FAQ section + FAQ sheet
+- My Courses empty state
+- Mobile-first responsive behaviour
+- PWA manifest
+
+The production 3,390+ catalogue, authentication, database, admin panel and analytics are intentionally not connected yet.
