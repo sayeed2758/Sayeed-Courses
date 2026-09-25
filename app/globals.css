@@ -126,7 +126,7 @@ a{color:inherit;text-decoration:none}
 .art-orb-one{width:55%;aspect-ratio:1;right:-11%;top:-23%}.art-orb-two{width:31%;aspect-ratio:1;right:12%;top:12%}
 .art-topline{position:absolute;z-index:2;left:20px;right:20px;top:17px;display:flex;align-items:center;justify-content:space-between;color:#f6f8fd;font:700 16px var(--ui)}
 .art-topline b{padding:10px 15px;border-radius:13px;color:#fff;background:#10c995;box-shadow:0 8px 18px rgba(0,0,0,.14);font:700 17px var(--hand)}
-.art-title{position:absolute;z-index:2;left:24px;right:24px;bottom:38px;color:#fff;font:600 clamp(44px,4.6vw,65px)/.88 var(--script);text-shadow:0 10px 30px rgba(0,0,0,.33)}
+
 .art-brand{position:absolute;z-index:2;right:20px;bottom:12px;color:rgba(255,255,255,.57);font:700 11px var(--ui);letter-spacing:.18em}
 .course-body{padding:18px 18px 19px}
 .course-pills{display:flex;gap:8px;flex-wrap:wrap}
@@ -175,16 +175,16 @@ a{color:inherit;text-decoration:none}
   .top-header-inner{min-height:64px;gap:7px}.brand-logo-image{width:41px;height:41px;flex-basis:41px}.brand-copy strong{font-size:21px}.brand-copy small{font-size:6.5px;letter-spacing:.16em}.top-actions{gap:4px}.app-button{height:41px;min-width:43px;padding:0 10px;border-radius:12px}.app-button span{display:none}.header-icon-button{width:41px;height:41px;border-radius:12px}.faq-button{width:41px!important;min-width:41px!important;padding:0!important}.faq-button span{display:none}
   .hero-reference{padding:57px 0 43px}.hero-inner{width:calc(100% - 18px)}.hero-kicker{font-size:10px;letter-spacing:.12em}.hero-reference h1{font-size:56px;line-height:.88;margin-top:15px}.hero-reference p{font-size:13px;line-height:1.72}.verified-pill{margin-top:22px;padding:10px 14px;font-size:16px}.search-reference{min-height:67px;margin-top:17px;padding-left:15px;border-radius:21px}.search-reference input{font-size:18px}.mic-button{width:45px;height:45px;flex-basis:45px;border-radius:13px!important}.hero-meta{gap:8px;font-size:8px;letter-spacing:.11em;white-space:nowrap;overflow:hidden}
   .catalogue-reference{padding-top:28px}.library-head{flex-direction:column;align-items:flex-start;gap:13px}.library-head h2{font-size:48px}.category-select-reference{width:100%;min-height:56px;min-width:0}.chip-row{padding-top:15px}.library-chip{min-height:43px;padding:0 14px;font-size:15px}.sort-bar{margin-top:14px;padding-top:15px}.result-count{font-size:15px}.result-count strong{font-size:23px}.sort-reference{height:52px;font-size:17px}
-  .course-grid-reference{gap:15px;margin-top:17px}.course-art{height:235px}.art-title{font-size:47px;bottom:33px}.course-body{padding:15px 15px 16px}.course-body h3{font-size:30px}.course-body>p{font-size:12.5px}.course-actions{grid-template-columns:1fr auto;gap:8px}.unlock-button{min-height:54px;font-size:19px}.cart-button-small{min-width:101px;font-size:16px}.cta-reference{margin-top:27px;margin-bottom:42px}.footer-reference{align-items:flex-start;flex-direction:column}
+  .course-grid-reference{gap:15px;margin-top:17px}.course-art{height:235px}.course-body{padding:15px 15px 16px}.course-body h3{font-size:30px}.course-body>p{font-size:12.5px}.course-actions{grid-template-columns:1fr auto;gap:8px}.unlock-button{min-height:54px;font-size:19px}.cart-button-small{min-width:101px;font-size:16px}.cta-reference{margin-top:27px;margin-bottom:42px}.footer-reference{align-items:flex-start;flex-direction:column}
   .reference-sheet{width:min(100%,560px);padding:14px 12px 24px}.sheet-header h2{font-size:31px}.sheet-intro{font-size:18px}.drawer-category{min-height:71px}.drawer-category strong{font-size:19px}.faq-reference-row>button{min-height:84px}.faq-reference-row>button strong{font-size:18px}.faq-answer-card p{font-size:18px;line-height:1.7}.faq-answer-card h3{font-size:22px}
 }
 
 @media (max-width:500px){
-  .brand-copy strong{font-size:20px}.brand-copy small{display:none}.top-actions{gap:3px}.header-icon-button,.app-button{width:40px;height:40px}.hero-reference{padding-top:54px}.hero-reference h1{font-size:51px}.hero-meta{margin-top:14px}.library-head h2{font-size:45px}.course-art{height:220px}.art-title{font-size:44px}.course-actions{grid-template-columns:1fr 96px}.unlock-button{font-size:17px}.cart-button-small{min-width:96px;font-size:14px}.faq-reference-row>button{grid-template-columns:45px 1fr 18px}.faq-number{width:44px}.faq-reference-row>button strong{font-size:17px}
+  .brand-copy strong{font-size:20px}.brand-copy small{display:none}.top-actions{gap:3px}.header-icon-button,.app-button{width:40px;height:40px}.hero-reference{padding-top:54px}.hero-reference h1{font-size:51px}.hero-meta{margin-top:14px}.library-head h2{font-size:45px}.course-art{height:220px}.course-actions{grid-template-columns:1fr 96px}.unlock-button{font-size:17px}.cart-button-small{min-width:96px;font-size:14px}.faq-reference-row>button{grid-template-columns:45px 1fr 18px}.faq-number{width:44px}.faq-reference-row>button strong{font-size:17px}
 }
 
 @media (max-width:390px){
-  .top-header-inner{width:calc(100% - 12px)}.brand-logo-image{width:38px;height:38px;flex-basis:38px}.brand-copy strong{font-size:18px}.top-actions{gap:2px}.app-button,.header-icon-button{width:37px;height:37px}.hero-reference h1{font-size:47px}.search-reference{min-height:61px}.search-reference input{font-size:16px}.verified-pill{font-size:14px}.library-head h2{font-size:42px}.course-art{height:207px}.art-title{font-size:40px}.course-body h3{font-size:26px}.unlock-button{font-size:15px}.cart-button-small{font-size:13px}.faq-header h2{font-size:28px}
+  .top-header-inner{width:calc(100% - 12px)}.brand-logo-image{width:38px;height:38px;flex-basis:38px}.brand-copy strong{font-size:18px}.top-actions{gap:2px}.app-button,.header-icon-button{width:37px;height:37px}.hero-reference h1{font-size:47px}.search-reference{min-height:61px}.search-reference input{font-size:16px}.verified-pill{font-size:14px}.library-head h2{font-size:42px}.course-art{height:207px}.course-body h3{font-size:26px}.unlock-button{font-size:15px}.cart-button-small{font-size:13px}.faq-header h2{font-size:28px}
 }
 
 @media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}.spinning svg,.loader-progress span{animation:none}.app-button,.header-icon-button{transition:none}}
@@ -386,4 +386,163 @@ a{color:inherit;text-decoration:none}
   .brand-logo-image{width:33px;height:33px;flex-basis:33px}
   .app-button,.header-icon-button{width:32px;height:32px;min-width:32px}
   .reaction-button{min-width:61px;padding-inline:8px;font-size:12px}
+}
+
+
+/* =========================================================
+   STEP 8 — FINAL FOUNDATION FIX
+   1) Header cannot overlap brand/actions.
+   2) Thumbnail never renders a course title.
+   3) Reactions have clear green/red active states.
+   4) Mobile proportions are stable at narrow widths.
+   5) Service-worker HTML caching is handled in /public/sw.js.
+   ========================================================= */
+
+.top-header-inner{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;
+  width:min(1180px,calc(100% - 24px));
+  min-height:64px;
+  gap:10px;
+}
+.brand-lockup{
+  min-width:0;
+  width:100%;
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+}
+.brand-copy{
+  min-width:0;
+  overflow:hidden;
+  flex:1 1 auto;
+}
+.brand-copy strong{
+  display:block;
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-family:var(--hand);
+  font-weight:700;
+  line-height:.98;
+  font-size:clamp(17px,2.4vw,23px);
+}
+.brand-copy small{overflow:hidden;text-overflow:ellipsis}
+.top-actions{
+  min-width:max-content;
+  flex:0 0 auto;
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:5px;
+}
+
+/* Absolutely no artwork title: keep the visual space clean like the reference. */
+.course-art .art-title{display:none!important}
+.course-art{
+  aspect-ratio:16/9;
+  height:auto!important;
+  min-height:0;
+}
+.course-art > .art-code,
+.course-art > .art-orb,
+.course-art > .art-topline,
+.course-art > .art-brand{z-index:2}
+.art-brand{
+  font-family:var(--hand)!important;
+  letter-spacing:.18em;
+}
+
+/* Reaction buttons: one current reaction per browser/device state. */
+.engagement-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  align-items:center;
+}
+.reaction-button{
+  min-width:74px;
+  min-height:38px;
+  padding:0 12px;
+  border-radius:999px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  border:1px solid rgba(101,125,179,.16);
+  color:#8d9bb1;
+  background:#091524;
+  font:700 14px/1 var(--hand);
+}
+.reaction-button.like.active{
+  color:#45efae;
+  border-color:rgba(52,239,174,.58);
+  background:rgba(14,106,78,.23);
+  box-shadow:0 0 22px rgba(28,228,164,.09);
+}
+.reaction-button.dislike.active{
+  color:#ff5d78;
+  border-color:rgba(255,72,104,.60);
+  background:rgba(116,24,43,.23);
+  box-shadow:0 0 22px rgba(255,57,91,.09);
+}
+
+/* Keep course title only in the body, with clear handwritten hierarchy. */
+.course-body h3{
+  margin:15px 0 4px;
+  font-family:var(--hand);
+  font-weight:700;
+  font-size:clamp(27px,4vw,34px);
+  line-height:1.05;
+}
+
+/* Saved cart action stays visibly different. */
+.cart-button-small.saved{
+  color:#54efb6;
+  border-color:rgba(84,239,182,.42);
+  background:rgba(13,98,72,.18);
+}
+
+/* Narrow phones: reserve a guaranteed action lane. */
+@media (max-width:520px){
+  .top-header-inner{
+    width:calc(100% - 10px);
+    grid-template-columns:minmax(0,1fr) auto;
+    gap:6px;
+  }
+  .brand-lockup{gap:6px}
+  .brand-logo-image{width:36px;height:36px;flex-basis:36px}
+  .brand-copy strong{font-size:16px}
+  .brand-copy small{display:none}
+  .top-actions{gap:3px}
+  .app-button,.header-icon-button{
+    width:34px!important;
+    min-width:34px!important;
+    height:34px!important;
+    border-radius:10px;
+    padding:0!important;
+  }
+  .app-button span,.faq-button span{display:none}
+  .app-button svg{width:15px;height:15px}
+  .header-icon-button svg{width:17px;height:17px}
+  .course-art{border-radius:20px 20px 0 0}
+  .course-body{padding:14px 14px 15px}
+  .course-body h3{font-size:25px}
+  .reaction-button{min-width:64px;min-height:37px;font-size:13px}
+}
+
+@media (max-width:390px){
+  .top-header-inner{width:calc(100% - 8px);gap:4px}
+  .brand-logo-image{width:33px;height:33px;flex-basis:33px}
+  .brand-copy strong{font-size:14px}
+  .top-actions{gap:2px}
+  .app-button,.header-icon-button{
+    width:32px!important;
+    min-width:32px!important;
+    height:32px!important;
+    border-radius:9px;
+  }
+  .course-body h3{font-size:24px}
 }

@@ -135,6 +135,7 @@ function CourseArtwork({ course }: { course: (typeof courses)[number] }) {
       <div className="art-orb art-orb-two" />
       <div className="art-topline"><span>#{String(course.number).padStart(3, '0')}</span><b>₹ {course.price}</b></div>
       <div className="art-brand">SAYEED</div>
+      {/* Course title intentionally stays in the card body only — never on the thumbnail. */}
     </div>
   );
 }
@@ -170,7 +171,7 @@ function CourseCard({
             aria-pressed={vote.userVote === 'like'}
             aria-label={`Like ${course.title}`}
           >
-            <span>{vote.userVote === 'like' ? '✓' : '👍'}</span> {vote.likes}
+            <span aria-hidden="true">{vote.userVote === 'like' ? '✓' : '♥'}</span> {vote.likes}
           </button>
           <button
             type="button"
@@ -179,7 +180,7 @@ function CourseCard({
             aria-pressed={vote.userVote === 'dislike'}
             aria-label={`Dislike ${course.title}`}
           >
-            <span>{vote.userVote === 'dislike' ? '✕' : '👎'}</span> {vote.dislikes}
+            <span aria-hidden="true">{vote.userVote === 'dislike' ? '✕' : '○'}</span> {vote.dislikes}
           </button>
         </div>
 
@@ -234,7 +235,9 @@ export default function HomePage() {
     window.addEventListener('beforeinstallprompt', handleBeforeInstall);
 
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').catch(() => {});
+      navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' })
+        .then((registration) => registration.update())
+        .catch(() => {});
     }
 
     return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
