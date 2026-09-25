@@ -1,51 +1,81 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { ChevronDown, Menu, Search, Sparkles, X } from 'lucide-react';
 
-const categories = ['All', 'School', 'JEE', 'NEET', 'UPSC', 'SSC', 'Banking'];
-const sorts = ['Recommended', 'Newest', 'Name A–Z', 'Course #'];
+const categories = ['All Courses', 'Design', 'Development', 'Business', 'Exams', 'School', 'Languages'];
+const sortOptions = ['Recommended', 'Newest', 'A — Z', 'Category'];
 
-const demoCourses = Array.from({ length: 18 }, (_, index) => {
-  const id = index + 1;
+const courses = Array.from({ length: 24 }, (_, index) => {
   const category = categories[(index % (categories.length - 1)) + 1];
-  const educators = ['Shahid Academy', 'Elite Faculty', 'Pro Learning'];
+  const number = index + 1;
+  const palettes = ['blue', 'violet', 'teal', 'amber'];
   return {
-    id,
+    id: number,
+    number,
     category,
-    title: `${category} Masterclass ${String(id).padStart(2, '0')}`,
-    educator: educators[index % educators.length],
-    year: 2026,
-    badge: index % 5 === 0 ? 'FEATURED' : index % 3 === 0 ? 'NEW' : 'VERIFIED',
+    title: `${category} ${['Masterclass', 'Complete Guide', 'Pro Bootcamp', 'Essential Course'][index % 4]}`,
+    educator: ['Sayeed Academy', 'Elite Faculty', 'Pro Learning', 'Master Teachers'][index % 4],
+    meta: ['2026 Batch', 'Premium', 'Updated 2026', 'New Release'][index % 4],
+    badge: index % 7 === 0 ? 'FEATURED' : index % 4 === 0 ? 'NEW' : 'VERIFIED',
+    palette: palettes[index % palettes.length],
+    description: 'A focused learning path with organised modules, practical resources and easy access.',
   };
 });
 
 const faqs = [
-  ['How do I find a course?', 'Search by course name, instructor, category, or course number.'],
-  ['Can I filter the catalogue?', 'Yes. Use the category chips and sorting control above the course grid.'],
-  ['Will the mobile version work like an app?', 'Yes. The final project will be installable as a Progressive Web App.'],
-  ['Where will the real course data come from?', 'Later phases will connect this interface to your authorized production course database.'],
+  ['How do I find a course?', 'Use the large search box to search by title, educator, category or course number.'],
+  ['Can I filter the course catalogue?', 'Yes. Choose a category from the category control or open the mobile category sheet.'],
+  ['Can I install this as an app?', 'Yes. The project is being built as a responsive Progressive Web App as well as a website.'],
+  ['How many courses will the final catalogue have?', 'The production catalogue is designed around a 3,390+ course library and can scale beyond that.'],
+  ['Where will the real course data come from?', 'Later phases will connect this UI to your authorised production course database and admin tools.'],
 ];
 
-function CourseCard({ course }: { course: (typeof demoCourses)[number] }) {
+function Icon({ name, size = 19 }: { name: string; size?: number }) {
+  const common = { width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
+  if (name === 'search') return <svg {...common}><circle cx="11" cy="11" r="6.8"/><path d="m16.2 16.2 4.2 4.2"/></svg>;
+  if (name === 'menu') return <svg {...common}><path d="M4 6h16M4 12h16M4 18h16"/></svg>;
+  if (name === 'x') return <svg {...common}><path d="m6 6 12 12M18 6 6 18"/></svg>;
+  if (name === 'refresh') return <svg {...common}><path d="M20 11a8.5 8.5 0 0 0-14.7-5L4 8"/><path d="M4 4v4h4"/><path d="M4 13a8.5 8.5 0 0 0 14.7 5L20 16"/><path d="M20 20v-4h-4"/></svg>;
+  if (name === 'help') return <svg {...common}><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.7 2.7 0 1 1 4.5 2c-1.4 1-2 1.5-2 3"/><path d="M12 17.4h.01"/></svg>;
+  if (name === 'send') return <svg {...common}><path d="m21 3-7.6 18-3.9-8.5L1 8.6 21 3Z"/><path d="m9.5 12.5 5-5"/></svg>;
+  if (name === 'bag') return <svg {...common}><path d="M6.5 8.5h11l1 12h-13l1-12Z"/><path d="M9 8.5V6.7a3 3 0 0 1 6 0v1.8"/></svg>;
+  if (name === 'chevron') return <svg {...common}><path d="m6 9 6 6 6-6"/></svg>;
+  if (name === 'arrow') return <svg {...common}><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>;
+  if (name === 'spark') return <svg {...common}><path d="m12 3 1.5 5.5L19 10l-5.5 1.5L12 17l-1.5-5.5L5 10l5.5-1.5L12 3Z"/><path d="m19 15 .7 2.3L22 18l-2.3.7L19 21l-.7-2.3L16 18l2.3-.7L19 15Z"/></svg>;
+  return null;
+}
+
+function CourseArtwork({ course }: { course: (typeof courses)[number] }) {
+  return (
+    <div className={`course-art ${course.palette}`}>
+      <div className="art-noise" />
+      <div className="art-grid" />
+      <div className="art-ring ring-one" />
+      <div className="art-ring ring-two" />
+      <span className="art-number">#{String(course.number).padStart(4, '0')}</span>
+      <span className="art-badge">{course.badge}</span>
+      <div className="art-copy"><small>{course.meta}</small><strong>{course.category}</strong></div>
+      <span className="art-watermark">SAYEED</span>
+    </div>
+  );
+}
+
+function CourseCard({ course }: { course: (typeof courses)[number] }) {
+  const [saved, setSaved] = useState(false);
   return (
     <article className="course-card">
-      <div className="course-art">
-        <span className="course-number">#{String(course.id).padStart(4, '0')}</span>
-        <div className="art-grid" />
-        <div className="art-orbit orbit-a" />
-        <div className="art-orbit orbit-b" />
-        <span className="art-letter">{course.category.slice(0, 1)}</span>
-        <span className="course-badge">{course.badge}</span>
-      </div>
-      <div className="card-body">
-        <div className="mini-meta">
-          <span>{course.category}</span>
-          <span>{course.year}</span>
-        </div>
+      <CourseArtwork course={course} />
+      <div className="course-body">
+        <div className="course-meta"><span>{course.category}</span><span>#{String(course.number).padStart(4, '0')}</span></div>
         <h3>{course.title}</h3>
-        <p>{course.educator}</p>
-        <button type="button" className="access-btn">View course <span>↗</span></button>
+        <p className="course-educator">{course.educator}</p>
+        <p className="course-description">{course.description}</p>
+        <div className="card-actions">
+          <button className={saved ? 'save-button saved' : 'save-button'} type="button" onClick={() => setSaved((v) => !v)}>
+            <span className="save-icon">{saved ? '✓' : '+'}</span>{saved ? 'SAVED' : 'SAVE COURSE'}
+          </button>
+          <button className="study-button" type="button">LET&apos;S STUDY <Icon name="arrow" size={17} /></button>
+        </div>
       </div>
     </article>
   );
@@ -53,190 +83,117 @@ function CourseCard({ course }: { course: (typeof demoCourses)[number] }) {
 
 export default function HomePage() {
   const [query, setQuery] = useState('');
-  const [category, setCategory] = useState('All');
+  const [category, setCategory] = useState('All Courses');
   const [sort, setSort] = useState('Recommended');
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [sortOpen, setSortOpen] = useState(false);
+  const [sheet, setSheet] = useState<'category' | 'faq' | 'menu' | 'bag' | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [faqOpen, setFaqOpen] = useState<number | null>(null);
 
   const filtered = useMemo(() => {
-    const normalized = query.trim().toLowerCase();
-    const result = demoCourses.filter((course) => {
-      const categoryMatch = category === 'All' || course.category === category;
-      const text = `${course.title} ${course.educator} ${course.category} ${course.id}`.toLowerCase();
-      return categoryMatch && (!normalized || text.includes(normalized));
+    const q = query.trim().toLowerCase();
+    const result = courses.filter((course) => {
+      const matchesCategory = category === 'All Courses' || course.category === category;
+      const haystack = `${course.title} ${course.educator} ${course.category} ${course.number}`.toLowerCase();
+      return matchesCategory && (!q || haystack.includes(q));
     });
-
-    if (sort === 'Newest') return [...result].sort((a, b) => b.id - a.id);
-    if (sort === 'Name A–Z') return [...result].sort((a, b) => a.title.localeCompare(b.title));
-    if (sort === 'Course #') return [...result].sort((a, b) => a.id - b.id);
+    if (sort === 'Newest') return [...result].sort((a, b) => b.number - a.number);
+    if (sort === 'A — Z') return [...result].sort((a, b) => a.title.localeCompare(b.title));
+    if (sort === 'Category') return [...result].sort((a, b) => a.category.localeCompare(b.category));
     return result;
   }, [query, category, sort]);
 
+  async function refreshCatalogue() {
+    setRefreshing(true);
+    setQuery('');
+    setCategory('All Courses');
+    setSort('Recommended');
+    setSortOpen(false);
+    await new Promise((resolve) => setTimeout(resolve, 550));
+    setRefreshing(false);
+  }
+
   return (
-    <main className="site-shell">
-      <header className="topbar">
+    <main className="shell">
+      <header className="header">
         <div className="header-inner">
-          <a href="#top" className="brand" aria-label="CourseHub home">
-            <span className="brand-mark"><Sparkles size={18} /></span>
-            <span className="brand-copy">
-              <strong>COURSE<span>HUB</span></strong>
-              <small>PREMIUM LEARNING LIBRARY</small>
-            </span>
+          <a href="#top" className="brand" aria-label="Sayeed Courses home">
+            <span className="brand-mark"><Icon name="spark" size={19} /></span>
+            <span className="brand-copy"><strong>SAYEED <i>COURSES</i></strong><small>YOUR NEXT SKILL STARTS HERE</small></span>
           </a>
 
-          <nav className={menuOpen ? 'desktop-nav mobile-open' : 'desktop-nav'}>
-            <a href="#courses" onClick={() => setMenuOpen(false)}>Courses</a>
-            <a href="#featured" onClick={() => setMenuOpen(false)}>Featured</a>
-            <a href="#faq" onClick={() => setMenuOpen(false)}>FAQ</a>
-            <a href="#request" className="nav-cta" onClick={() => setMenuOpen(false)}>Request Course</a>
-          </nav>
-
-          <button className="menu-btn" type="button" aria-label="Toggle menu" onClick={() => setMenuOpen((v) => !v)}>
-            {menuOpen ? <X size={21} /> : <Menu size={21} />}
-          </button>
+          <div className="header-actions">
+            <button className="header-control faq-control" type="button" onClick={() => setSheet('faq')}><Icon name="help" size={18} /><span>FAQs</span></button>
+            <button className="header-control" type="button" onClick={refreshCatalogue} aria-label="Refresh catalogue"><Icon name="refresh" size={19} /></button>
+            <button className="header-control telegram-control" type="button" onClick={() => setSheet('menu')} aria-label="Open quick links"><Icon name="send" size={19} /></button>
+            <button className="header-control bag-control" type="button" onClick={() => setSheet('bag')} aria-label="My courses"><Icon name="bag" size={19} /><b>0</b></button>
+            <button className="header-control" type="button" onClick={() => setSheet('menu')} aria-label="Open menu"><Icon name="menu" size={20} /></button>
+          </div>
         </div>
       </header>
 
-      <section id="top" className="hero">
-        <div className="hero-noise" aria-hidden="true" />
-        <div className="hero-light light-a" aria-hidden="true" />
-        <div className="hero-light light-b" aria-hidden="true" />
-        <div className="hero-content">
-          <span className="eyebrow"><Sparkles size={14} /> CURIOUS MINDS. ENDLESS POSSIBILITIES.</span>
+      <section id="top" className="hero-section">
+        <div className="hero-orb orb-left" />
+        <div className="hero-orb orb-right" />
+        <div className="content hero-content">
+          <span className="hero-kicker">CURIOUS MINDS. ENDLESS POSSIBILITIES.</span>
           <h1>Find your next <em>skill.</em></h1>
-          <p>One premium catalogue for discovering courses quickly, with a clean interface that stays focused on learning.</p>
+          <p>Discover, save and study from one beautifully organised course library.</p>
 
-          <div className="search-wrap">
-            <Search size={21} aria-hidden="true" />
-            <input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search course by name or # number..."
-              aria-label="Search course by name or number"
-            />
-            {query && (
-              <button type="button" className="clear-search" aria-label="Clear search" onClick={() => setQuery('')}>
-                <X size={17} />
-              </button>
-            )}
-            <span className="search-count">3,390+</span>
+          <div className="search-box">
+            <Icon name="search" size={22} />
+            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search course by name or # number..." aria-label="Search course" />
+            {query && <button type="button" onClick={() => setQuery('')} aria-label="Clear search"><Icon name="x" size={18} /></button>}
+            <span className="course-count">3,390+</span>
           </div>
 
-          <div className="hero-trust">
-            <span>VERIFIED CATALOGUE</span>
-            <i />
-            <span>FAST SEARCH</span>
-            <i />
-            <span>PWA READY</span>
-          </div>
+          <div className="hero-rail"><span>CURATED CATALOGUE</span><i /><span>INSTANT SEARCH</span><i /><span>PWA READY</span></div>
         </div>
       </section>
 
-      <section id="courses" className="section catalogue-section">
-        <div className="section-topline">
-          <div>
-            <span className="section-kicker">THE LIBRARY</span>
-            <h2>Explore all courses <small>(3,390)</small></h2>
-          </div>
-          <p>Step 1 demo catalogue · production data comes later</p>
+      <section id="courses" className="content catalogue">
+        <div className="catalogue-heading">
+          <div><span className="section-kicker">THE LIBRARY</span><h2>3,390+ courses <small>to explore</small></h2></div>
+          <button className="category-button" type="button" onClick={() => setSheet('category')}><span>{category}</span><Icon name="chevron" size={17} /></button>
         </div>
 
-        <div className="controls">
-          <div className="chips" aria-label="Course categories">
-            {categories.map((item) => (
-              <button key={item} type="button" className={item === category ? 'chip active' : 'chip'} onClick={() => setCategory(item)}>
-                {item}
-              </button>
-            ))}
+        <div className="toolbar">
+          <div className="category-chips">
+            {categories.slice(0, 5).map((item) => <button key={item} type="button" className={item === category ? 'chip active' : 'chip'} onClick={() => setCategory(item)}>{item}</button>)}
           </div>
-          <label className="sort-control">
-            <span>SORT</span>
-            <select value={sort} onChange={(event) => setSort(event.target.value)} aria-label="Sort courses">
-              {sorts.map((item) => <option key={item}>{item}</option>)}
-            </select>
-            <ChevronDown size={16} aria-hidden="true" />
-          </label>
+          <div className="sort-wrap">
+            <button className="sort-button" type="button" onClick={() => setSortOpen((v) => !v)}><span>↕ SORT</span><Icon name="chevron" size={16} /></button>
+            {sortOpen && <div className="sort-menu">{sortOptions.map((item) => <button key={item} type="button" className={item === sort ? 'selected' : ''} onClick={() => { setSort(item); setSortOpen(false); }}>{item}<span>{item === sort ? '✓' : ''}</span></button>)}</div>}
+          </div>
         </div>
 
-        <div className="results-line">
-          <span>{filtered.length} demo courses shown</span>
-          <span>{query ? `Searching for “${query}”` : category === 'All' ? 'All categories' : category}</span>
-        </div>
+        <div className="results-line"><span>{filtered.length} demo courses shown</span><span>{query ? `Searching “${query}”` : category}</span></div>
 
-        {filtered.length ? (
-          <div className="course-grid">
-            {filtered.map((course) => <CourseCard key={course.id} course={course} />)}
-          </div>
-        ) : (
-          <div className="empty-state">
-            <Search size={26} />
-            <h3>No courses found</h3>
-            <p>Try another title, instructor, category, or course number.</p>
-          </div>
-        )}
+        {refreshing && <div className="refresh-banner"><Icon name="refresh" size={16} /> Refreshing catalogue…</div>}
+
+        <div className="course-grid">{filtered.map((course) => <CourseCard course={course} key={course.id} />)}</div>
+        {!filtered.length && <div className="empty-state"><Icon name="search" size={28} /><h3>No courses found</h3><p>Try another search or reset the filters.</p><button type="button" onClick={() => { setQuery(''); setCategory('All Courses'); }}>RESET FILTERS</button></div>}
       </section>
 
-      <section id="featured" className="section showcase-section">
-        <div className="showcase-card">
-          <div>
-            <span className="section-kicker">CURATED PICKS</span>
-            <h2>A catalogue that feels like a product, not a spreadsheet.</h2>
-            <p>The visual direction stays editorial, spacious and premium while the underlying system is built to scale later.</p>
-          </div>
-          <div className="showcase-stack" aria-hidden="true">
-            <div className="stack-card"><span>01</span><b>DISCOVER</b></div>
-            <div className="stack-card offset"><span>02</span><b>LEARN</b></div>
-            <div className="stack-card offset-more"><span>03</span><b>GROW</b></div>
-          </div>
+      <section id="featured" className="content feature-section">
+        <div className="feature-panel">
+          <div className="feature-copy"><span className="section-kicker">CURATED FOR YOU</span><h2>Premium learning, without the clutter.</h2><p>The catalogue is intentionally spacious, fast to search and designed to become the front door to your full course platform.</p><button type="button" className="feature-link" onClick={() => document.getElementById('courses')?.scrollIntoView({ behavior: 'smooth' })}>EXPLORE THE LIBRARY <Icon name="arrow" size={16} /></button></div>
+          <div className="feature-visual" aria-hidden="true"><div className="feature-card f1"><small>01</small><strong>DISCOVER</strong></div><div className="feature-card f2"><small>02</small><strong>LEARN</strong></div><div className="feature-card f3"><small>03</small><strong>GROW</strong></div></div>
         </div>
       </section>
 
-      <section id="request" className="section request-section">
-        <div className="request-card">
-          <div>
-            <span className="section-kicker">CAN&apos;T FIND IT?</span>
-            <h2>Request a course.</h2>
-            <p>The request workflow will be connected to the database and admin panel in a later phase.</p>
-          </div>
-          <button type="button" className="primary-btn">Request course <span>↗</span></button>
-        </div>
-      </section>
+      <section id="request" className="content request-section"><div className="request-panel"><div><span className="section-kicker">CAN&apos;T FIND IT?</span><h2>Request a course.</h2><p>The request workflow will connect to the production database in the next phase.</p></div><button type="button">REQUEST COURSE <span>↗</span></button></div></section>
 
-      <section id="faq" className="section faq-section">
-        <div className="section-heading">
-          <span className="section-kicker">SUPPORT</span>
-          <h2>Frequently asked questions.</h2>
-        </div>
-        <div className="faq-list">
-          {faqs.map(([question, answer], index) => {
-            const open = openFaq === index;
-            return (
-              <div className={open ? 'faq-item open' : 'faq-item'} key={question}>
-                <button type="button" onClick={() => setOpenFaq(open ? null : index)} className="faq-question">
-                  <span>{question}</span>
-                  <span className="faq-icon">{open ? '−' : '+'}</span>
-                </button>
-                {open && <p className="faq-answer">{answer}</p>}
-              </div>
-            );
-          })}
-        </div>
-      </section>
+      <section id="faq" className="content faq-section"><div className="section-heading"><span className="section-kicker">A LITTLE CLARITY</span><h2>Frequently asked questions.</h2></div><div className="faq-list">{faqs.map(([q, a], i) => { const open = faqOpen === i; return <div className={open ? 'faq-row open' : 'faq-row'} key={q}><button type="button" onClick={() => setFaqOpen(open ? null : i)}><span>{q}</span><b>{open ? '−' : '+'}</b></button>{open && <p>{a}</p>}</div>; })}</div></section>
 
-      <footer className="footer">
-        <div className="footer-inner">
-          <div>
-            <strong>COURSE<span>HUB</span></strong>
-            <small>Premium Course Library</small>
-          </div>
-          <div className="footer-links">
-            <a href="#courses">Courses</a>
-            <a href="#featured">Featured</a>
-            <a href="#faq">FAQ</a>
-          </div>
-        </div>
-        <div className="footer-bottom">© 2026 CourseHub · Step 1 UI Foundation</div>
-      </footer>
+      <footer className="footer"><div className="footer-inner"><div><strong>SAYEED <i>COURSES</i></strong><small>YOUR NEXT SKILL STARTS HERE</small></div><div className="footer-links"><a href="#courses">Courses</a><a href="#featured">Featured</a><a href="#request">Request</a><a href="#faq">FAQ</a></div></div><div className="footer-bottom">© 2026 Sayeed Courses · UI foundation for the premium course hub</div></footer>
+
+      {sheet && <div className="overlay" role="dialog" aria-modal="true" onMouseDown={(e) => { if (e.target === e.currentTarget) setSheet(null); }}><aside className="sheet"><button className="sheet-close" type="button" onClick={() => setSheet(null)} aria-label="Close"><Icon name="x" size={19} /></button>
+        {sheet === 'category' && <><span className="section-kicker">EXPLORE YOUR INTERESTS</span><h2>Course categories.</h2><div className="category-list">{categories.map((item) => <button type="button" className={item === category ? 'category-row active' : 'category-row'} key={item} onClick={() => { setCategory(item); setSheet(null); }}><span>{item}</span><b>{item === 'All Courses' ? '3,390+' : '—'}</b></button>)}</div></>}
+        {sheet === 'faq' && <><span className="section-kicker">A LITTLE CLARITY</span><h2>Questions & answers.</h2><div className="faq-list sheet-faq">{faqs.map(([q, a], i) => { const open = faqOpen === i; return <div className={open ? 'faq-row open' : 'faq-row'} key={q}><button type="button" onClick={() => setFaqOpen(open ? null : i)}><span>{q}</span><b>{open ? '−' : '+'}</b></button>{open && <p>{a}</p>}</div>; })}</div></>}
+        {sheet === 'menu' && <><span className="section-kicker">KEEP IT SIMPLE</span><h2>Your course hub.</h2><div className="menu-block"><div className="menu-account"><span>ACCOUNT</span><strong>Guest learner</strong><small>Sign-in will be connected in the backend phase.</small></div><button type="button" onClick={() => setSheet('category')}><span>Categories</span><b>→</b></button><button type="button" onClick={() => setSheet('faq')}><span>FAQs</span><b>→</b></button><button type="button" onClick={() => setSheet('bag')}><span>My Courses</span><b>0</b></button></div></>}
+        {sheet === 'bag' && <><span className="section-kicker">YOUR NEXT CHAPTER</span><h2>My course shelf.</h2><div className="bag-empty"><Icon name="bag" size={29} /><h3>Your shelf is empty.</h3><p>Save a course to start building your personal learning list.</p><button type="button" onClick={() => setSheet(null)}>BROWSE COURSES</button></div></>}
+      </aside></div>}
     </main>
   );
 }
