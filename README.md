@@ -1,26 +1,24 @@
-# Sayeed Courses — Step 2
+# Sayeed Courses
 
-Premium UI shell for the new Sayeed Courses project.
+Premium course catalogue UI built with Next.js and designed for Vercel.
 
-## Upload structure
+## Current foundation
+- Compact mobile-first header
+- Install App action
+- Direct Telegram support: @LWS_SPECIAL_SUPPORTS
+- Refresh reloads the app and loader
+- Search + sort
+- Compact premium course cards
+- Like / dislike with toast feedback
+- Cart with live local total
+- Buy-all Telegram message generation
+- Notification Center UI
+- FAQ + category drawers
 
-Upload the contents of this folder directly into the GitHub repository root.
-Do not upload the outer folder itself.
+## Live backend (optional but recommended)
+Create a Supabase project, run `supabase-schema.sql`, then add:
 
-## Step 2 scope
+`NEXT_PUBLIC_SUPABASE_URL`
+`NEXT_PUBLIC_SUPABASE_ANON_KEY`
 
-- Working Next.js App Router foundation
-- Premium responsive header
-- Sample-inspired handwritten typography
-- Large course search
-- Category chips + category sheet
-- Sort menu
-- Refresh interaction
-- 24 demo course cards
-- Save-course interaction
-- FAQ section + FAQ sheet
-- My Courses empty state
-- Mobile-first responsive behaviour
-- PWA manifest
-
-The production 3,390+ catalogue, authentication, database, admin panel and analytics are intentionally not connected yet.
+in Vercel Environment Variables. With those configured, reactions, notifications and the course count are shared across users.
