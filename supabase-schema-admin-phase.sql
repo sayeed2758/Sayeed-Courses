@@ -1,0 +1,1 @@
+-- Admin extension is merged into supabase-schema.sql. Run the single main schema file.
