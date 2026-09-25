@@ -1,116 +1,78 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  fetchCourseCount,
+  fetchReactionCounts,
+  fetchNotifications,
+  isLiveBackendConfigured,
+  setRemoteReaction,
+  getOrCreateSessionId,
+  type LiveNotification,
+} from '../lib/live';
 
-const CATALOGUE_TOTAL = '3,695+';
-const TELEGRAM_USERNAME = 'Tuffybhai';
-const CART_KEY = 'sayeed_courses_cart_v2';
-const VOTE_KEY = 'sayeed_courses_votes_v3';
-
-type VoteKind = 'like' | 'dislike';
-type UserVote = VoteKind | null;
-
-type Course = {
-  id: number;
-  number: number;
-  category: string;
-  title: string;
-  educator: string;
-  meta: string;
-  price: number;
-  palette: string;
-  rating: string;
-  reviews: number;
-  likes: number;
-  dislikes: number;
-};
-
-type VoteState = { likes: number; dislikes: number; userVote: UserVote };
-
-type Sheet = 'category' | 'faq' | 'menu' | 'bag' | null;
+const TELEGRAM_USERNAME = 'LWS_SPECIAL_SUPPORTS';
+const DEFAULT_NOTIFICATIONS: LiveNotification[] = [
+  {
+    id: 'welcome-1',
+    title: 'Welcome to Sayeed Courses',
+    body: 'The course library is live. New catalogue updates will appear here.',
+    type: 'info',
+    created_at: new Date().toISOString(),
+  },
+];
 
 const categories = [
-  ['All Courses', '▦', '3,695'],
-  ['New Added Courses', '◷', '0'],
-  ['Coding & Tech', '</>', '153'],
-  ['AI & Automation', '◈', '100'],
-  ['Upsurge Courses', '↗', '245'],
-  ['Finance & Taxation', '▤', '56'],
-  ['Astrology & Occult', '✣', '754'],
-  ['Fitness & Health', '✚', '63'],
-  ['Dating & Relationships', '♥', '88'],
-  ['Personal Growth & Mindset', '◉', '171'],
-  ['Communication & Languages', '◌', '91'],
-  ['Video Editing & Media', '▮', '125'],
+  ['All Courses', '▦'],
+  ['New Added Courses', '◷'],
+  ['Coding & Tech', '</>'],
+  ['AI & Automation', '◈'],
+  ['Upsurge Courses', '↗'],
+  ['Finance & Taxation', '▤'],
+  ['Astrology & Occult', '✣'],
+  ['Fitness & Health', '✚'],
+  ['Dating & Relationships', '♥'],
+  ['Personal Growth & Mindset', '◉'],
+  ['Communication & Languages', '◌'],
+  ['Video Editing & Media', '▮'],
 ] as const;
 
 const sortOptions = ['Recommended', 'Newest', 'A — Z', 'Category'];
 
-const courseSeed = [
-  ['Coding & Tech', 'Alpha Batch 3.0', 'Sayeed Academy', '2026 Batch', 299, 'teal', 4.8, 307],
-  ['AI & Automation', 'Alpha Plus 6.0 (C++)', 'Sayeed Academy', '2026 Batch', 299, 'orange', 4.9, 184],
-  ['Coding & Tech', 'Alpha Plus Batch 2.0', 'Sayeed Academy', '2026 Batch', 299, 'purple', 4.7, 228],
-  ['Coding & Tech', 'Alpha Plus Batch 3.0', 'Sayeed Academy', '2026 Batch', 299, 'blue', 4.6, 193],
-  ['Finance & Taxation', 'Smart Tax Masterclass', 'Sayeed Academy', 'Updated 2026', 399, 'teal', 4.5, 142],
-  ['Personal Growth & Mindset', 'Focus & Discipline Blueprint', 'Sayeed Academy', 'Premium', 249, 'purple', 4.4, 119],
-  ['AI & Automation', 'Prompt Engineering Pro', 'Sayeed Academy', 'Updated 2026', 349, 'blue', 4.9, 266],
-  ['Coding & Tech', 'Web Development Zero to Pro', 'Sayeed Academy', 'New Release', 449, 'orange', 4.8, 311],
-  ['Coding & Tech', 'Python Automation Mastery', 'Sayeed Academy', '2026 Batch', 299, 'teal', 4.7, 208],
-  ['AI & Automation', 'AI Tools Mega Pack', 'Sayeed Academy', 'Premium', 199, 'purple', 4.6, 171],
-  ['Finance & Taxation', 'Personal Finance Simplified', 'Sayeed Academy', 'Updated 2026', 249, 'blue', 4.3, 98],
-  ['Personal Growth & Mindset', 'Build Better Habits', 'Sayeed Academy', 'New Release', 149, 'orange', 4.2, 84],
-];
-
-const courses: Course[] = Array.from({ length: 36 }, (_, index) => {
-  const seed = courseSeed[index % courseSeed.length];
-  const variation = Math.floor(index / courseSeed.length);
-  const rating = Number(seed[6]);
+const courses = Array.from({ length: 24 }, (_, index) => {
+  const categoryNames = ['Coding & Tech', 'AI & Automation', 'Finance & Taxation', 'Personal Growth & Mindset'];
+  const palette = ['teal', 'orange', 'purple', 'blue'][index % 4];
+  const number = index + 1;
+  const rating = (4 + (((index * 7 + 3) % 11) / 10)).toFixed(1);
   return {
-    id: index + 1,
-    number: index + 1,
-    category: String(seed[0]),
-    title: variation === 0 ? String(seed[1]) : `${String(seed[1])} ${variation + 1}.${index % 3}`,
-    educator: String(seed[2]),
-    meta: String(seed[3]),
-    price: Number(seed[4]),
-    palette: String(seed[5]),
-    rating: Math.min(5, rating + ((index * 3) % 5) / 10).toFixed(1),
-    reviews: Number(seed[7]) + variation * 17 + index,
-    likes: 38 + ((index * 29) % 120),
-    dislikes: 2 + ((index * 7) % 9),
+    id: number,
+    number,
+    category: categoryNames[index % categoryNames.length],
+    title: ['Alpha Batch 3.0', 'Complete DSA Batch', 'AI Automation Mastery', 'Personal Growth Blueprint'][index % 4],
+    educator: ['Sayeed Academy', 'Elite Faculty', 'Pro Learning', 'Master Teachers'][index % 4],
+    meta: ['2026 Batch', 'Premium', 'Updated 2026', 'New Release'][index % 4],
+    price: [299, 199, 399, 249][index % 4],
+    palette,
+    rating,
+    reviews: 120 + ((index * 41) % 260),
+    likes: 46 + ((index * 27) % 90),
+    dislikes: 2 + ((index * 11) % 6),
   };
 });
 
 const faqs = [
-  {
-    title: 'Courses kahan aur kaise milenge? (Telegram vs Google Drive / Mega)',
-    answer: '⚡ Courses ko authorised delivery method ke through simple learning flow mein provide kiya jayega. Course detail page par jo access method listed hoga, wahi follow karein.',
-  },
-  {
-    title: 'Kya courses ZIP / RAR files mein honge ya Direct Videos format mein?',
-    answer: '🎬 Jahan direct video delivery available hogi, wahan content ko one-tap learning flow mein organise kiya jayega. Course details mein available format clearly mention hoga.',
-  },
-  {
-    title: 'Kya channel takedown wagera ho sakta hai? Access kab tak rahega?',
-    answer: '🛡️ Access authorised provider aur course availability par depend karta hai. Platform par jo current access policy listed hogi, wahi reliable reference hogi.',
-  },
-  {
-    title: 'Can I download the videos and watch them offline?',
-    answer: '📱 Offline viewing har course ke delivery method par depend karegi. Jahan download permitted aur supported hoga, wahi option clearly show kiya jayega.',
-  },
-  {
-    title: 'Course kaise purchase / order karein? (Step-by-Step Purchase Guide)',
-    answer: '🧾 Course open karein → available access details check karein → purchase/request action follow karein → confirmation ke baad authorised access instructions use karein.',
-  },
-  {
-    title: 'Kya lectures ke sath PDFs, assignments aur notes bhi milenge?',
-    answer: '📚 Har course ka resource bundle alag ho sakta hai. PDFs, assignments aur notes available honge to course details mein clearly listed honge.',
-  },
-  {
-    title: 'Why are the courses priced so cheaply compared to other platforms?',
-    answer: '💡 Pricing source, promotions, licensing and delivery model par depend kar sakti hai. Final price har course ke card/details section mein clearly shown hoga.',
-  },
+  ['Courses kahan aur kaise milenge?', 'Har course ke liye authorised access method course details mein clearly diya jayega.'],
+  ['Kya courses ZIP / RAR files mein honge?', 'Delivery format course ke hisaab se alag ho sakta hai. Available format course details mein mention hoga.'],
+  ['Access kab tak rahega?', 'Access current course availability aur listed access policy par depend karega.'],
+  ['Can I download the videos and watch them offline?', 'Sirf wahi content offline available hoga jahan downloading explicitly supported aur permitted ho.'],
+  ['Course kaise purchase / order karein?', 'Course select karein, details dekhein aur listed purchase/request flow follow karein.'],
+  ['Kya PDFs, assignments aur notes milenge?', 'Available resources har course ke hisaab se alag ho sakte hain aur details mein listed honge.'],
+  ['New courses ki information kahan milegi?', 'New catalogue updates Notifications Center mein publish kiye ja sakte hain.'],
 ];
+
+type VoteState = { likes: number; dislikes: number; userVote: 'like' | 'dislike' | null };
+
+type Sheet = 'category' | 'faq' | 'menu' | 'cart' | 'notifications' | null;
 
 function Icon({ name, size = 20 }: { name: string; size?: number }) {
   const common = {
@@ -122,8 +84,8 @@ function Icon({ name, size = 20 }: { name: string; size?: number }) {
     strokeWidth: 1.8,
     strokeLinecap: 'round' as const,
     strokeLinejoin: 'round' as const,
+    'aria-hidden': true,
   };
-
   if (name === 'search') return <svg {...common}><circle cx="11" cy="11" r="6.8" /><path d="m16.2 16.2 4.2 4.2" /></svg>;
   if (name === 'menu') return <svg {...common}><path d="M4 6h16M4 12h16M4 18h16" /></svg>;
   if (name === 'x') return <svg {...common}><path d="m6 6 12 12M18 6 6 18" /></svg>;
@@ -131,35 +93,42 @@ function Icon({ name, size = 20 }: { name: string; size?: number }) {
   if (name === 'help') return <svg {...common}><circle cx="12" cy="12" r="9" /><path d="M9.5 9a2.7 2.7 0 1 1 4.5 2c-1.4 1-2 1.5-2 3" /><path d="M12 17.4h.01" /></svg>;
   if (name === 'send') return <svg {...common}><path d="m21 3-7.6 18-3.9-8.5L1 8.6 21 3Z" /><path d="m9.5 12.5 5-5" /></svg>;
   if (name === 'bag') return <svg {...common}><path d="M6.5 8.5h11l1 12h-13l1-12Z" /><path d="M9 8.5V6.7a3 3 0 0 1 6 0v1.8" /></svg>;
+  if (name === 'bell') return <svg {...common}><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" /><path d="M10 21h4" /></svg>;
   if (name === 'download') return <svg {...common}><path d="M12 3v11" /><path d="m7.5 10.5 4.5 4.5 4.5-4.5" /><path d="M5 20h14" /></svg>;
-  if (name === 'chevron') return <svg {...common}><path d="m6 9 6 6 6-6" /></svg>;
+  if (name === 'mic') return <svg {...common}><rect x="9" y="3" width="6" height="11" rx="3" /><path d="M6 11a6 6 0 0 0 12 0M12 17v4M8 21h8" /></svg>;
   if (name === 'layers') return <svg {...common}><path d="m12 3 8 4-8 4-8-4 8-4Z" /><path d="m4 12 8 4 8-4" /><path d="m4 17 8 4 8-4" /></svg>;
+  if (name === 'chevron') return <svg {...common}><path d="m6 9 6 6 6-6" /></svg>;
   return null;
 }
 
-function BootLoader({ onDone }: { onDone: () => void }) {
+function Loader({ done }: { done: () => void }) {
   useEffect(() => {
-    const timer = window.setTimeout(onDone, 1600);
+    const timer = window.setTimeout(done, 1650);
     return () => window.clearTimeout(timer);
-  }, [onDone]);
+  }, [done]);
 
   return (
     <div className="boot-loader">
       <div className="loader-core">
-        <div className="loader-logo-wrap"><img src="/shahid-logo.png" alt="Sayeed Courses" /></div>
+        <div className="loader-logo-wrap"><img src="/shahid-logo.png" alt="Sayeed" /></div>
         <div className="loader-brand">SAYEED <span>COURSES</span></div>
-        <div className="loader-subtitle">VIP COURSES HUB</div>
+        <div className="loader-subtitle">PREMIUM COURSE HUB</div>
         <div className="loader-progress"><span /></div>
-        <div className="loader-status"><i /> Loading {CATALOGUE_TOTAL} Courses...</div>
+        <div className="loader-status"><i /> Loading {courses.length} courses...</div>
       </div>
     </div>
   );
 }
 
-function CourseArtwork({ course }: { course: Course }) {
+function getTelegramUrl(message?: string) {
+  const base = `https://t.me/${TELEGRAM_USERNAME}`;
+  return message ? `${base}?text=${encodeURIComponent(message)}` : base;
+}
+
+function CourseArtwork({ course }: { course: (typeof courses)[number] }) {
   return (
     <div className={`course-art ${course.palette}`}>
-      <div className="art-code">0101100101 0010110010 1011010001</div>
+      <div className="art-code" aria-hidden="true">0101100101 0010110010 1011010001</div>
       <div className="art-orb art-orb-one" />
       <div className="art-orb art-orb-two" />
       <div className="art-topline"><span>#{String(course.number).padStart(3, '0')}</span><b>₹ {course.price}</b></div>
@@ -168,13 +137,18 @@ function CourseArtwork({ course }: { course: Course }) {
   );
 }
 
-function CourseCard({ course, vote, onVote, inCart, onCartToggle, onToast }: {
-  course: Course;
+function CourseCard({
+  course,
+  vote,
+  onVote,
+  inCart,
+  onCartToggle,
+}: {
+  course: (typeof courses)[number];
   vote: VoteState;
-  onVote: (id: number, next: VoteKind) => void;
+  onVote: (id: number, next: 'like' | 'dislike') => void;
   inCart: boolean;
   onCartToggle: (id: number) => void;
-  onToast: (message: string) => void;
 }) {
   return (
     <article className="course-card">
@@ -187,20 +161,19 @@ function CourseCard({ course, vote, onVote, inCart, onCartToggle, onToast }: {
         </div>
 
         <div className="engagement-row" aria-label={`Reactions for ${course.title}`}>
-          <button type="button" className={`reaction-button like ${vote.userVote === 'like' ? 'active' : ''}`} onClick={() => onVote(course.id, 'like')} aria-pressed={vote.userVote === 'like'}>
-            <span>👍</span> {vote.likes}
+          <button className={vote.userVote === 'like' ? 'reaction-button like active' : 'reaction-button like'} type="button" onClick={() => onVote(course.id, 'like')} aria-pressed={vote.userVote === 'like'}>
+            <span>{vote.userVote === 'like' ? '✓' : '👍'}</span> {vote.likes}
           </button>
-          <button type="button" className={`reaction-button dislike ${vote.userVote === 'dislike' ? 'active' : ''}`} onClick={() => onVote(course.id, 'dislike')} aria-pressed={vote.userVote === 'dislike'}>
-            <span>👎</span> {vote.dislikes}
+          <button className={vote.userVote === 'dislike' ? 'reaction-button dislike active' : 'reaction-button dislike'} type="button" onClick={() => onVote(course.id, 'dislike')} aria-pressed={vote.userVote === 'dislike'}>
+            <span>{vote.userVote === 'dislike' ? '✕' : '👎'}</span> {vote.dislikes}
           </button>
         </div>
 
         <h3>{course.number}. {course.title}</h3>
         <p>{course.educator} · {course.meta}</p>
-
         <div className="course-actions">
-          <button className="unlock-button" type="button" onClick={() => onToast('Course access flow coming next.')}>↪&nbsp; Unlock Course · ₹{course.price}</button>
-          <button className={`cart-button-small ${inCart ? 'saved' : ''}`} type="button" onClick={() => onCartToggle(course.id)} aria-pressed={inCart}>
+          <a className="unlock-button" href={getTelegramUrl(`Hi, I want to know more about course: ${course.title} (₹${course.price})`)} target="_blank" rel="noreferrer">↪&nbsp; Unlock Course · ₹{course.price}</a>
+          <button className={inCart ? 'cart-button-small saved' : 'cart-button-small'} type="button" onClick={() => onCartToggle(course.id)} aria-pressed={inCart}>
             {inCart ? '✓ In Cart' : '🛒 Cart'}
           </button>
         </div>
@@ -212,8 +185,8 @@ function CourseCard({ course, vote, onVote, inCart, onCartToggle, onToast }: {
 export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
-  const [sort, setSort] = useState('Recommended');
   const [category, setCategory] = useState('All Courses');
+  const [sort, setSort] = useState('Recommended');
   const [sortOpen, setSortOpen] = useState(false);
   const [sheet, setSheet] = useState<Sheet>(null);
   const [faqOpen, setFaqOpen] = useState<number | null>(null);
@@ -222,20 +195,55 @@ export default function HomePage() {
   const [installHint, setInstallHint] = useState('');
   const [cartIds, setCartIds] = useState<number[]>([]);
   const [votes, setVotes] = useState<Record<number, VoteState>>({});
+  const [notifications, setNotifications] = useState<LiveNotification[]>(DEFAULT_NOTIFICATIONS);
+  const [readNotifications, setReadNotifications] = useState<string[]>([]);
+  const [catalogueCount, setCatalogueCount] = useState(courses.length);
   const [toast, setToast] = useState('');
+
+  const liveBackend = isLiveBackendConfigured();
+
+  const showToast = useCallback((message: string) => {
+    setToast(message);
+    window.setTimeout(() => setToast(''), 2200);
+  }, []);
+
+  const loadLiveData = useCallback(async () => {
+    if (!liveBackend) return;
+    const [remoteVotes, remoteCount, remoteNotifications] = await Promise.all([
+      fetchReactionCounts(courses.map(course => course.id)),
+      fetchCourseCount(),
+      fetchNotifications(),
+    ]);
+    if (remoteVotes) {
+      setVotes(current => {
+        const next = { ...current };
+        for (const row of remoteVotes) {
+          next[row.course_id] = {
+            likes: row.likes,
+            dislikes: row.dislikes,
+            userVote: row.user_reaction,
+          };
+        }
+        return next;
+      });
+    }
+    if (typeof remoteCount === 'number' && remoteCount > 0) setCatalogueCount(remoteCount);
+    if (remoteNotifications?.length) setNotifications(remoteNotifications);
+  }, [liveBackend]);
 
   useEffect(() => {
     try {
-      const rawCart = window.localStorage.getItem(CART_KEY);
-      const savedCart = rawCart ? JSON.parse(rawCart) : [];
+      const savedCart = JSON.parse(window.localStorage.getItem('sayeed_courses_cart_v2') || '[]');
       if (Array.isArray(savedCart)) setCartIds(savedCart.filter((id): id is number => Number.isInteger(id)));
-
-      const rawVotes = window.localStorage.getItem(VOTE_KEY);
-      const savedVotes = rawVotes ? JSON.parse(rawVotes) : {};
+      const savedVotes = JSON.parse(window.localStorage.getItem('sayeed_courses_votes_v3') || '{}');
       if (savedVotes && typeof savedVotes === 'object') setVotes(savedVotes);
+      const savedReads = JSON.parse(window.localStorage.getItem('sayeed_notifications_read_v1') || '[]');
+      if (Array.isArray(savedReads)) setReadNotifications(savedReads.filter((id): id is string => typeof id === 'string'));
+      getOrCreateSessionId();
     } catch {
       setCartIds([]);
       setVotes({});
+      setReadNotifications([]);
     }
 
     const handleBeforeInstall = (event: Event) => {
@@ -243,49 +251,44 @@ export default function HomePage() {
       setDeferredPrompt(event);
     };
     window.addEventListener('beforeinstallprompt', handleBeforeInstall);
-
-    if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => undefined);
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
     return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
   }, []);
 
   useEffect(() => {
-    if (!toast) return;
-    const timer = window.setTimeout(() => setToast(''), 2200);
-    return () => window.clearTimeout(timer);
-  }, [toast]);
-
-  useEffect(() => {
-    document.body.style.overflow = sheet ? 'hidden' : '';
-    return () => { document.body.style.overflow = ''; };
-  }, [sheet]);
+    loadLiveData();
+    if (!liveBackend) return undefined;
+    const timer = window.setInterval(loadLiveData, 4000);
+    return () => window.clearInterval(timer);
+  }, [loadLiveData, liveBackend]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const result = courses.filter(course => {
+    let result = courses.filter(course => {
       const matchesCategory = category === 'All Courses' || course.category === category;
       const haystack = `${course.title} ${course.educator} ${course.category} ${course.number}`.toLowerCase();
       return matchesCategory && (!q || haystack.includes(q));
     });
-    if (sort === 'Newest') return [...result].sort((a, b) => b.number - a.number);
-    if (sort === 'A — Z') return [...result].sort((a, b) => a.title.localeCompare(b.title));
-    if (sort === 'Category') return [...result].sort((a, b) => a.category.localeCompare(b.category));
+    if (sort === 'Newest') result = [...result].sort((a, b) => b.number - a.number);
+    if (sort === 'A — Z') result = [...result].sort((a, b) => a.title.localeCompare(b.title));
+    if (sort === 'Category') result = [...result].sort((a, b) => a.category.localeCompare(b.category));
     return result;
-  }, [query, sort, category]);
+  }, [query, category, sort]);
 
-  const cartCourses = cartIds.map(id => courses.find(course => course.id === id)).filter((course): course is Course => Boolean(course));
+  const cartCourses = cartIds.map(id => courses.find(course => course.id === id)).filter((course): course is (typeof courses)[number] => Boolean(course));
   const cartTotal = cartCourses.reduce((sum, course) => sum + course.price, 0);
+  const unreadCount = notifications.filter(item => !readNotifications.includes(String(item.id))).length;
 
   function getVote(id: number): VoteState {
     const base = courses.find(course => course.id === id);
     return votes[id] || { likes: base?.likes || 0, dislikes: base?.dislikes || 0, userVote: null };
   }
 
-  function handleVote(id: number, next: VoteKind) {
+  async function handleVote(id: number, next: 'like' | 'dislike') {
     const current = getVote(id);
     let likes = current.likes;
     let dislikes = current.dislikes;
-    let userVote: UserVote = current.userVote;
-
+    let userVote: VoteState['userVote'] = current.userVote;
     if (userVote === next) {
       if (next === 'like') likes = Math.max(0, likes - 1);
       else dislikes = Math.max(0, dislikes - 1);
@@ -297,83 +300,75 @@ export default function HomePage() {
       else dislikes += 1;
       userVote = next;
     }
+    const optimistic = { likes, dislikes, userVote };
+    setVotes(currentVotes => ({ ...currentVotes, [id]: optimistic }));
+    window.localStorage.setItem('sayeed_courses_votes_v3', JSON.stringify({ ...votes, [id]: optimistic }));
+    showToast(next === 'like' ? 'Liked Course 👍' : 'Disliked Course 👎');
 
-    const nextState = { ...votes, [id]: { likes, dislikes, userVote } };
-    setVotes(nextState);
-    window.localStorage.setItem(VOTE_KEY, JSON.stringify(nextState));
-    setToast(next === 'like' ? 'Liked Course 👍' : 'Disliked Course 👎');
+    if (liveBackend) {
+      const remote = await setRemoteReaction(id, next);
+      if (remote) {
+        setVotes(currentVotes => ({ ...currentVotes, [id]: remote }));
+      }
+    }
   }
 
   function toggleCart(id: number) {
-    const wasInCart = cartIds.includes(id);
-    const next = wasInCart ? cartIds.filter(item => item !== id) : [...cartIds, id];
-    setCartIds(next);
-    window.localStorage.setItem(CART_KEY, JSON.stringify(next));
-    setToast(wasInCart ? 'Course removed from cart' : 'Course added to cart 🛒');
+    setCartIds(current => {
+      const next = current.includes(id) ? current.filter(item => item !== id) : [...current, id];
+      window.localStorage.setItem('sayeed_courses_cart_v2', JSON.stringify(next));
+      return next;
+    });
   }
 
   function refreshCatalogue() {
     setRefreshing(true);
-    setQuery('');
-    setSort('Recommended');
-    setCategory('All Courses');
-    setSortOpen(false);
-    window.setTimeout(() => setRefreshing(false), 650);
+    window.setTimeout(() => window.location.reload(), 500);
   }
 
   async function handleInstall() {
     if (deferredPrompt) {
-      const event = deferredPrompt as Event & { prompt?: () => Promise<void>; userChoice?: Promise<{ outcome: string }> };
-      await event.prompt?.();
-      await event.userChoice?.catch(() => undefined);
+      const promptEvent = deferredPrompt as Event & { prompt?: () => Promise<void>; userChoice?: Promise<{ outcome: string }> };
+      await promptEvent.prompt?.();
+      await promptEvent.userChoice?.catch(() => undefined);
       setDeferredPrompt(null);
       return;
     }
-    setInstallHint('Open your browser menu and choose “Add to Home screen” or “Install app”.');
+    setInstallHint('Open browser menu → Add to Home screen / Install app.');
     window.setTimeout(() => setInstallHint(''), 4200);
   }
 
+  function openNotifications() {
+    setSheet('notifications');
+    const allIds = notifications.map(item => String(item.id));
+    setReadNotifications(allIds);
+    window.localStorage.setItem('sayeed_notifications_read_v1', JSON.stringify(allIds));
+  }
+
   function buyAllOnTelegram() {
-    if (!cartCourses.length) return;
-    const lines = [
-      `Hey ${TELEGRAM_USERNAME}, I want to purchase these ${cartCourses.length} course${cartCourses.length === 1 ? '' : 's'}:`,
-      '',
-      ...cartCourses.map((course, index) => `${index + 1}. ${course.title} (₹${course.price})`),
-      '',
-      `Total Package: ₹${cartTotal.toLocaleString('en-IN')}`,
-      '',
-      'Please share payment details for instant access!'
-    ];
-    const url = `https://t.me/${TELEGRAM_USERNAME}?text=${encodeURIComponent(lines.join('\n'))}`;
-    window.location.href = url;
+    const lines = cartCourses.map((course, index) => `${index + 1}. ${course.title} (₹${course.price})`);
+    const message = `Hey, I want to purchase these ${cartCourses.length} courses:\n\n${lines.join('\n')}\n\nTotal Package: ₹${cartTotal}\n\nPlease share payment details for instant access!`;
+    window.open(getTelegramUrl(message), '_blank', 'noopener,noreferrer');
   }
 
-  function openSheet(target: Exclude<Sheet, null>) {
-    setSheet(target);
-  }
-
-  if (loading) return <BootLoader onDone={() => setLoading(false)} />;
+  if (loading) return <Loader done={() => setLoading(false)} />;
 
   return (
     <main className="reference-app">
       <header className="top-header">
         <div className="top-header-inner">
           <a href="#top" className="brand-lockup" aria-label="Sayeed Courses home">
-            <span className="brand-logo-image"><img src="/shahid-logo.png" alt="Sayeed Courses" /></span>
-            <span className="brand-copy"><strong>SAYEED <i>COURSES</i></strong><small>YOUR NEXT SKILL STARTS HERE</small></span>
+            <span className="brand-logo-image"><img src="/shahid-logo.png" alt="Sayeed logo" /></span>
+            <span className="brand-copy"><strong><span>SAYEED</span><i>COURSES</i></strong><small>YOUR NEXT SKILL STARTS HERE</small></span>
           </a>
 
           <div className="top-actions">
-            <button className="app-button" type="button" onClick={handleInstall}><Icon name="download" size={18} /><span>APP</span></button>
-            <button className="header-icon-button faq-button" type="button" onClick={() => openSheet('faq')} aria-label="FAQs"><Icon name="help" size={20} /><span>FAQs</span></button>
-            <button className="header-icon-button cyan" type="button" onClick={buyAllOnTelegram} aria-label="Telegram"><Icon name="send" size={20} /></button>
-            {cartCourses.length > 0 && (
-              <button className="header-icon-button cart-header-button" type="button" onClick={() => openSheet('bag')} aria-label={`Cart with ${cartCourses.length} courses`}>
-                <Icon name="bag" size={20} /><b>{cartCourses.length}</b>
-              </button>
-            )}
-            <button className={refreshing ? 'header-icon-button spinning' : 'header-icon-button'} type="button" onClick={refreshCatalogue} aria-label="Refresh"><Icon name="refresh" size={20} /></button>
-            <button className="header-icon-button menu-button" type="button" onClick={() => openSheet('menu')} aria-label="Menu"><Icon name="menu" size={22} /></button>
+            <button className="app-button" type="button" onClick={handleInstall} title="Install App"><Icon name="download" size={17} /><span>APP</span></button>
+            <button className="header-icon-button faq-button" type="button" onClick={() => setSheet('faq')} title="FAQs"><Icon name="help" size={19} /><span>FAQs</span></button>
+            <a className="header-icon-button cyan" href={getTelegramUrl()} target="_blank" rel="noreferrer" aria-label="Telegram support" title={TELEGRAM_USERNAME}><Icon name="send" size={19} /></a>
+            {cartCourses.length > 0 && <button className="header-icon-button cart-head-button" type="button" onClick={() => setSheet('cart')} aria-label="Open cart" title="Cart"><Icon name="bag" size={18} /><b>{cartCourses.length}</b></button>}
+            <button className={refreshing ? 'header-icon-button spinning' : 'header-icon-button'} type="button" onClick={refreshCatalogue} aria-label="Refresh app" title="Refresh"><Icon name="refresh" size={19} /></button>
+            <button className="header-icon-button menu-button" type="button" onClick={() => setSheet('menu')} aria-label="Menu"><Icon name="menu" size={21} /></button>
           </div>
         </div>
       </header>
@@ -383,124 +378,95 @@ export default function HomePage() {
         <div className="hero-shape shape-a" />
         <div className="hero-shape shape-b" />
         <div className="reference-tools">
-          <div className="verified-pill"><i /> {CATALOGUE_TOTAL} Verified Courses Available</div>
+          <div className="verified-pill"><i /> {catalogueCount.toLocaleString('en-IN')} Verified Courses Available</div>
           <div className="search-reference">
-            <Icon name="search" size={28} />
-            <input value={query} onChange={event => setQuery(event.target.value)} placeholder="Search course by name or # number..." aria-label="Search courses" />
-            {query && <button type="button" className="search-clear" onClick={() => setQuery('')} aria-label="Clear search"><Icon name="x" size={18} /></button>}
-            <button className="mic-button" type="button" onClick={() => setToast('Voice search is ready for a later backend pass.')} aria-label="Voice search"><span>🎙</span></button>
+            <Icon name="search" size={26} />
+            <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search course by name or # number..." aria-label="Search courses" />
+            {query && <button type="button" className="search-clear" onClick={() => setQuery('')} aria-label="Clear search"><Icon name="x" size={17} /></button>}
+            <button className="mic-button" type="button" aria-label="Voice search" title="Voice search"><Icon name="mic" size={19} /></button>
           </div>
         </div>
       </section>
 
       <section id="courses" className="catalogue-reference">
         <div className="library-head reference-library-head">
-          <div><h2>All Courses <span>(3,695)</span></h2></div>
+          <div><span className="section-kicker">THE LIBRARY</span><h2>All Courses <span>({catalogueCount.toLocaleString('en-IN')})</span></h2></div>
           <div className="sort-reference-wrap">
-            <button className="sort-reference" type="button" onClick={() => setSortOpen(open => !open)}>↕ Sort <Icon name="chevron" size={15} /></button>
+            <button className="sort-reference" type="button" onClick={() => setSortOpen(v => !v)}>↕ Sort <Icon name="chevron" size={15} /></button>
             {sortOpen && <div className="sort-reference-menu">{sortOptions.map(item => <button key={item} type="button" className={item === sort ? 'selected' : ''} onClick={() => { setSort(item); setSortOpen(false); }}>{item}<span>{item === sort ? '✓' : ''}</span></button>)}</div>}
           </div>
         </div>
 
         <div className="course-grid-reference">
-          {filtered.map(course => (
-            <CourseCard key={course.id} course={course} vote={getVote(course.id)} onVote={handleVote} inCart={cartIds.includes(course.id)} onCartToggle={toggleCart} onToast={setToast} />
-          ))}
+          {filtered.map(course => <CourseCard key={course.id} course={course} vote={getVote(course.id)} onVote={handleVote} inCart={cartIds.includes(course.id)} onCartToggle={toggleCart} />)}
         </div>
 
-        {filtered.length === 0 && <div className="empty-reference"><strong>No courses found</strong><span>Try another keyword or reset the search.</span><button type="button" onClick={() => setQuery('')}>RESET SEARCH</button></div>}
+        {filtered.length === 0 && <div className="empty-reference"><strong>No courses found</strong><span>Try another keyword or reset the search.</span><button type="button" onClick={() => { setQuery(''); setCategory('All Courses'); }}>RESET SEARCH</button></div>}
       </section>
 
       <section className="cta-reference">
-        <span className="section-kicker">CAN&apos;T FIND IT?</span>
+        <span className="section-kicker">NEED SOMETHING?</span>
         <h2>Request a course.</h2>
-        <p>Tell us what you want to see in the next catalogue update.</p>
-        <button type="button" onClick={() => setToast('Course request flow will be connected next.')}>REQUEST COURSE ↗</button>
+        <p>Tell us what should be added to the next catalogue update.</p>
+        <a href={getTelegramUrl('Hi, I want to request a course.')} target="_blank" rel="noreferrer">REQUEST COURSE ↗</a>
       </section>
 
-      <footer className="footer-reference"><strong>SAYEED <i>COURSES</i></strong><span>© 2026 · Premium course hub</span></footer>
+      <footer className="footer-reference"><strong>SAYEED <i>COURSES</i></strong><span>© 2026 · Premium Course Hub · {TELEGRAM_USERNAME}</span></footer>
 
-      {cartCourses.length > 0 && (
-        <div className="cart-bottom-bar">
-          <button className="cart-float-icon" type="button" onClick={() => openSheet('bag')} aria-label="Open cart"><Icon name="bag" size={22} /><b>{cartCourses.length}</b></button>
-          <button className="cart-view-button" type="button" onClick={() => openSheet('bag')}>☷ View Cart</button>
-          <button className="cart-buy-button" type="button" onClick={buyAllOnTelegram}><Icon name="send" size={17} /> Buy All on Telegram</button>
-        </div>
-      )}
-
+      {toast && <div className="toast-message" role="status">{toast}</div>}
       {installHint && <div className="install-hint" role="status">{installHint}</div>}
-      {toast && <div className="toast" role="status" aria-live="polite">{toast}</div>}
 
       {sheet && (
-        <div className="sheet-overlay" role="dialog" aria-modal="true" onMouseDown={event => { if (event.target === event.currentTarget) setSheet(null); }}>
+        <div className="sheet-overlay" role="dialog" aria-modal="true" onMouseDown={e => { if (e.target === e.currentTarget) setSheet(null); }}>
           <aside className="reference-sheet">
             {sheet === 'category' && (
               <>
-                <div className="sheet-header"><div className="sheet-title-icon"><Icon name="layers" size={23} /></div><h2>Course Categories</h2><button type="button" onClick={() => setSheet(null)} aria-label="Close"><Icon name="x" size={22} /></button></div>
+                <div className="sheet-header"><div className="sheet-title-icon"><Icon name="layers" size={23} /></div><h2>Course Categories</h2><button type="button" onClick={() => setSheet(null)} aria-label="Close"><Icon name="x" size={21} /></button></div>
                 <p className="sheet-intro">Tap a category to filter courses:</p>
-                <div className="category-drawer-list">
-                  {categories.map(([name, symbol, count]) => <button key={name} type="button" className={`drawer-category ${name === category ? 'active' : ''}`} onClick={() => { setCategory(name); setSheet(null); setToast(`${name} selected`); }}><span className="drawer-icon">{symbol}</span><strong>{name}</strong><b>{count}</b></button>)}
-                </div>
+                <div className="category-drawer-list">{categories.map(([name, symbol]) => <button key={name} type="button" className={name === category ? 'drawer-category active' : 'drawer-category'} onClick={() => { setCategory(name); setSheet(null); }}><span className="drawer-icon">{symbol}</span><strong>{name}</strong><b>{name === 'All Courses' ? catalogueCount : courses.filter(course => course.category === name).length}</b></button>)}</div>
               </>
             )}
 
             {sheet === 'faq' && (
               <>
-                <div className="sheet-header faq-header"><div className="faq-mark">?</div><h2>Frequently Asked<br />Questions (Q&amp;A)</h2><button type="button" onClick={() => setSheet(null)} aria-label="Close"><Icon name="x" size={22} /></button></div>
-                <div className="faq-scroll">
-                  <div className="faq-answer-guide">Delivery, Video Quality, Payment &amp; Access Guidelines:</div>
-                  <button className="collapse-all-reference" type="button" onClick={() => setFaqOpen(null)}>Collapse All&nbsp;⌃</button>
-                  <div className="faq-reference-list">
-                    {faqs.map((faq, index) => {
-                      const open = faqOpen === index;
-                      return <div className={`faq-reference-row ${open ? 'open' : ''}`} key={faq.title}>
-                        <button type="button" onClick={() => setFaqOpen(open ? null : index)}><span className="faq-number">{String(index + 1).padStart(2, '0')}</span><strong>{faq.title}</strong><span className="faq-chevron">{open ? '⌃' : '⌄'}</span></button>
-                        {open && <div className="faq-answer-card"><h3>{index === 0 ? 'Important Delivery & Access Policy' : 'Answer'}</h3><p>{faq.answer}</p></div>}
-                      </div>;
-                    })}
-                  </div>
-                </div>
+                <div className="sheet-header faq-header"><div className="faq-mark">?</div><h2>Frequently Asked<br />Questions (Q&amp;A)</h2><button type="button" onClick={() => setSheet(null)} aria-label="Close"><Icon name="x" size={21} /></button></div>
+                <div className="faq-scroll"><div className="faq-answer-guide">Delivery, Quality, Payment &amp; Access Guidelines:</div><button className="collapse-all-reference" type="button" onClick={() => setFaqOpen(null)}>Collapse All&nbsp;⌃</button><div className="faq-reference-list">{faqs.map(([title, answer], index) => { const open = faqOpen === index; return <div className={open ? 'faq-reference-row open' : 'faq-reference-row'} key={title}><button type="button" onClick={() => setFaqOpen(open ? null : index)}><span className="faq-number">{String(index + 1).padStart(2, '0')}</span><strong>{title}</strong><span className="faq-chevron">{open ? '⌃' : '⌄'}</span></button>{open && <div className="faq-answer-card"><h3>{index === 6 ? 'Notification Center' : 'Answer'}</h3><p>{answer}</p></div>}</div>; })}</div></div>
               </>
             )}
 
             {sheet === 'menu' && (
               <>
-                <div className="sheet-header"><div className="sheet-title-icon"><Icon name="menu" size={23} /></div><h2>Your Course Hub</h2><button type="button" onClick={() => setSheet(null)} aria-label="Close"><Icon name="x" size={22} /></button></div>
+                <div className="sheet-header"><div className="sheet-title-icon"><Icon name="menu" size={23} /></div><h2>Your Course Hub</h2><button type="button" onClick={() => setSheet(null)} aria-label="Close"><Icon name="x" size={21} /></button></div>
                 <div className="menu-reference-list">
                   <button type="button" onClick={() => setSheet('faq')}>❓ FAQs <span>→</span></button>
                   <button type="button" onClick={() => setSheet('category')}>▦ Categories <span>→</span></button>
-                  <button type="button" onClick={() => setSheet('bag')}>🛒 My Cart <span>{cartCourses.length}</span></button>
+                  <button type="button" onClick={() => setSheet('cart')}>🛒 My Cart <span>{cartCourses.length}</span></button>
+                  <button type="button" onClick={openNotifications}>🔔 Notifications <span>{unreadCount}</span></button>
                   <button type="button" onClick={handleInstall}>⬇ Install App <span>→</span></button>
+                  <a href={getTelegramUrl()} target="_blank" rel="noreferrer">✈ Telegram Support <span>↗</span></a>
                 </div>
               </>
             )}
 
-            {sheet === 'bag' && (
+            {sheet === 'notifications' && (
               <>
-                <div className="sheet-header"><div className="sheet-title-icon"><Icon name="bag" size={23} /></div><h2>Selected Courses<br />Cart ({cartCourses.length})</h2><button type="button" onClick={() => setSheet(null)} aria-label="Close"><Icon name="x" size={22} /></button></div>
-                <p className="sheet-intro">Ek sath multiple courses select karke instant package access lijiye:</p>
-                {cartCourses.length === 0 ? (
-                  <div className="bag-reference-empty"><div className="bag-big"><Icon name="bag" size={30} /></div><h3>Your cart is empty</h3><p>Save courses from the catalogue and they will appear here with a live total.</p><button type="button" onClick={() => setSheet(null)}>BROWSE COURSES</button></div>
-                ) : (
-                  <div className="cart-reference">
-                    <div className="cart-list">
-                      {cartCourses.map(course => (
-                        <div className="cart-row" key={course.id}>
-                          <div className={`cart-thumb ${course.palette}`}><span>#{String(course.number).padStart(3, '0')}</span></div>
-                          <div className="cart-course-copy"><strong>{course.title}</strong><small>{course.category}</small></div>
-                          <div className="cart-row-actions"><b>₹{course.price}</b><button type="button" onClick={() => toggleCart(course.id)} aria-label={`Remove ${course.title}`}>✕</button></div>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="cart-total-box"><div><span>Total Selected Items:</span><strong>{cartCourses.length} courses</strong></div><div><span>Combined Total:</span><b>₹{cartTotal.toLocaleString('en-IN')}</b></div></div>
-                    <div className="cart-modal-actions"><button className="clear-cart" type="button" onClick={() => { setCartIds([]); window.localStorage.setItem(CART_KEY, '[]'); setToast('Cart cleared'); }}>🗑 Clear Cart</button><button className="buy-modal" type="button" onClick={buyAllOnTelegram}><Icon name="send" size={18} /> Buy All Courses on Telegram</button></div>
-                  </div>
-                )}
+                <div className="sheet-header"><div className="sheet-title-icon notification-icon"><Icon name="bell" size={23} /></div><h2>Notifications</h2><button type="button" onClick={() => setSheet(null)} aria-label="Close"><Icon name="x" size={21} /></button></div>
+                <p className="sheet-intro">New course updates and important announcements will appear here.</p>
+                <div className="notification-list">{notifications.map(item => <article className={`notification-card ${item.type || 'info'}`} key={item.id}><span className="notification-dot" /><div><strong>{item.title}</strong><p>{item.body}</p><small>{new Date(item.created_at).toLocaleString('en-IN')}</small></div></article>)}</div>
+              </>
+            )}
+
+            {sheet === 'cart' && (
+              <>
+                <div className="sheet-header"><div className="sheet-title-icon"><Icon name="bag" size={23} /></div><h2>Selected Courses Cart ({cartCourses.length})</h2><button type="button" onClick={() => setSheet(null)} aria-label="Close"><Icon name="x" size={21} /></button></div>
+                {cartCourses.length === 0 ? <div className="bag-reference-empty"><div className="bag-big"><Icon name="bag" size={30} /></div><h3>Your cart is empty</h3><p>Save courses from the catalogue and they will appear here with a live total.</p><button type="button" onClick={() => setSheet(null)}>BROWSE COURSES</button></div> : <div className="cart-reference"><div className="cart-summary"><div><small>{cartCourses.length} {cartCourses.length === 1 ? 'course' : 'courses'} selected</small><strong>₹{cartTotal.toLocaleString('en-IN')}</strong></div><span>LIVE TOTAL</span></div><div className="cart-list">{cartCourses.map(course => <div className="cart-row" key={course.id}><div><small>#{String(course.number).padStart(3, '0')} · {course.category}</small><strong>{course.title}</strong></div><div className="cart-row-actions"><b>₹{course.price}</b><button type="button" onClick={() => toggleCart(course.id)} aria-label={`Remove ${course.title}`}>✕</button></div></div>)}</div><div className="cart-grand-total"><span>Combined Total</span><strong>₹{cartTotal.toLocaleString('en-IN')}</strong></div><div className="cart-actions"><button type="button" className="clear-cart" onClick={() => { setCartIds([]); window.localStorage.removeItem('sayeed_courses_cart_v2'); }}>🗑 Clear Cart</button><button type="button" className="buy-all" onClick={buyAllOnTelegram}>✈ Buy All Courses on Telegram</button></div></div>}
               </>
             )}
           </aside>
         </div>
       )}
+
+      {cartCourses.length > 0 && <div className="floating-cart-bar"><button type="button" className="floating-cart-count" onClick={() => setSheet('cart')}><Icon name="bag" size={18} /><b>{cartCourses.length}</b></button><button type="button" className="floating-view-cart" onClick={() => setSheet('cart')}>☷ View Cart</button><button type="button" className="floating-buy" onClick={buyAllOnTelegram}>✈ Buy All on Telegram</button></div>}
     </main>
   );
 }
