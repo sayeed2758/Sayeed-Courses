@@ -222,7 +222,7 @@ export default function HomePage() {
           next[row.course_id] = {
             likes: row.likes,
             dislikes: row.dislikes,
-            userVote: row.userVote,
+            userVote: row.userVote ?? current[row.course_id]?.userVote ?? null,
           };
         }
         return next;
@@ -313,9 +313,12 @@ export default function HomePage() {
       else dislikes += 1;
       userVote = next;
     }
-    const optimistic = { likes, dislikes, userVote };
-    setVotes(currentVotes => ({ ...currentVotes, [id]: optimistic }));
-    window.localStorage.setItem('sayeed_courses_votes_v3', JSON.stringify({ ...votes, [id]: optimistic }));
+    const optimistic: VoteState = { likes, dislikes, userVote };
+    setVotes(currentVotes => {
+      const nextVotes = { ...currentVotes, [id]: optimistic };
+      window.localStorage.setItem('sayeed_courses_votes_v3', JSON.stringify(nextVotes));
+      return nextVotes;
+    });
     showToast(next === 'like' ? 'Liked Course 👍' : 'Disliked Course 👎');
 
     if (liveBackend) {
@@ -326,8 +329,11 @@ export default function HomePage() {
           dislikes: Number.isFinite(Number(remote.dislikes)) ? Number(remote.dislikes) : dislikes,
           userVote: remote.userVote === 'like' || remote.userVote === 'dislike' ? remote.userVote : null,
         };
-        setVotes(currentVotes => ({ ...currentVotes, [id]: normalizedRemote }));
-        window.localStorage.setItem('sayeed_courses_votes_v3', JSON.stringify({ ...currentVotes, [id]: normalizedRemote }));
+        setVotes(currentVotes => {
+          const nextVotes = { ...currentVotes, [id]: normalizedRemote };
+          window.localStorage.setItem('sayeed_courses_votes_v3', JSON.stringify(nextVotes));
+          return nextVotes;
+        });
       }
     }
   }
