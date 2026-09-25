@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   fetchCourseCount,
   fetchReactionCounts,
@@ -8,6 +8,7 @@ import {
   isLiveBackendConfigured,
   setRemoteReaction,
   getOrCreateSessionId,
+  subscribeToLiveUpdates,
   type LiveNotification,
   type LiveVoteState,
 } from '../lib/live';
@@ -56,8 +57,8 @@ const courses = Array.from({ length: 24 }, (_, index) => {
     palette,
     rating,
     reviews: 120 + ((index * 41) % 260),
-    likes: 46 + ((index * 27) % 90),
-    dislikes: 2 + ((index * 11) % 6),
+    likes: 0,
+    dislikes: 0,
   };
 });
 
@@ -115,7 +116,7 @@ function Loader({ done }: { done: () => void }) {
         <div className="loader-brand">SAYEED <span>COURSES</span></div>
         <div className="loader-subtitle">PREMIUM COURSE HUB</div>
         <div className="loader-progress"><span /></div>
-        <div className="loader-status"><i /> Loading {courses.length} courses...</div>
+        <div className="loader-status"><i /> Loading course library...</div>
       </div>
     </div>
   );
@@ -200,6 +201,8 @@ export default function HomePage() {
   const [readNotifications, setReadNotifications] = useState<string[]>([]);
   const [catalogueCount, setCatalogueCount] = useState(courses.length);
   const [toast, setToast] = useState('');
+  const pendingVoteIds = useRef(new Set<number>());
+  const voteRequestSeq = useRef<Record<number, number>>({});
 
   const liveBackend = isLiveBackendConfigured();
 
@@ -219,16 +222,17 @@ export default function HomePage() {
       setVotes(current => {
         const next = { ...current };
         for (const row of remoteVotes) {
+          if (pendingVoteIds.current.has(row.course_id)) continue;
           next[row.course_id] = {
             likes: row.likes,
             dislikes: row.dislikes,
-            userVote: row.userVote ?? current[row.course_id]?.userVote ?? null,
+            userVote: row.userVote,
           };
         }
         return next;
       });
     }
-    if (typeof remoteCount === 'number' && remoteCount > 0) setCatalogueCount(remoteCount);
+    if (typeof remoteCount === 'number') setCatalogueCount(remoteCount);
     if (remoteNotifications?.length) setNotifications(remoteNotifications);
   }, [liveBackend]);
 
@@ -236,7 +240,7 @@ export default function HomePage() {
     try {
       const savedCart = JSON.parse(window.localStorage.getItem('sayeed_courses_cart_v2') || '[]');
       if (Array.isArray(savedCart)) setCartIds(savedCart.filter((id): id is number => Number.isInteger(id)));
-      const savedVotes = JSON.parse(window.localStorage.getItem('sayeed_courses_votes_v3') || '{}');
+      const savedVotes = JSON.parse(window.localStorage.getItem('sayeed_courses_votes_v4') || window.localStorage.getItem('sayeed_courses_votes_v3') || '{}');
       if (savedVotes && typeof savedVotes === 'object') {
         const normalized: Record<number, VoteState> = {};
         for (const [key, value] of Object.entries(savedVotes as Record<string, unknown>)) {
@@ -271,8 +275,12 @@ export default function HomePage() {
   useEffect(() => {
     loadLiveData();
     if (!liveBackend) return undefined;
-    const timer = window.setInterval(loadLiveData, 4000);
-    return () => window.clearInterval(timer);
+    const unsubscribe = subscribeToLiveUpdates(() => { void loadLiveData(); });
+    const timer = window.setInterval(() => { void loadLiveData(); }, 10000);
+    return () => {
+      unsubscribe();
+      window.clearInterval(timer);
+    };
   }, [loadLiveData, liveBackend]);
 
   const filtered = useMemo(() => {
@@ -302,6 +310,7 @@ export default function HomePage() {
     let likes = current.likes;
     let dislikes = current.dislikes;
     let userVote: VoteState['userVote'] = current.userVote;
+
     if (userVote === next) {
       if (next === 'like') likes = Math.max(0, likes - 1);
       else dislikes = Math.max(0, dislikes - 1);
@@ -313,16 +322,29 @@ export default function HomePage() {
       else dislikes += 1;
       userVote = next;
     }
+
     const optimistic: VoteState = { likes, dislikes, userVote };
+    voteRequestSeq.current[id] = (voteRequestSeq.current[id] || 0) + 1;
+    const requestId = voteRequestSeq.current[id];
+    pendingVoteIds.current.add(id);
+
     setVotes(currentVotes => {
       const nextVotes = { ...currentVotes, [id]: optimistic };
-      window.localStorage.setItem('sayeed_courses_votes_v3', JSON.stringify(nextVotes));
+      try {
+        window.localStorage.setItem('sayeed_courses_votes_v4', JSON.stringify(nextVotes));
+      } catch {}
       return nextVotes;
     });
     showToast(next === 'like' ? 'Liked Course 👍' : 'Disliked Course 👎');
 
-    if (liveBackend) {
+    if (!liveBackend) {
+      pendingVoteIds.current.delete(id);
+      return;
+    }
+
+    try {
       const remote = await setRemoteReaction(id, next);
+      if (requestId !== voteRequestSeq.current[id]) return;
       if (remote) {
         const normalizedRemote: VoteState = {
           likes: Number.isFinite(Number(remote.likes)) ? Number(remote.likes) : likes,
@@ -331,10 +353,14 @@ export default function HomePage() {
         };
         setVotes(currentVotes => {
           const nextVotes = { ...currentVotes, [id]: normalizedRemote };
-          window.localStorage.setItem('sayeed_courses_votes_v3', JSON.stringify(nextVotes));
+          try {
+            window.localStorage.setItem('sayeed_courses_votes_v4', JSON.stringify(nextVotes));
+          } catch {}
           return nextVotes;
         });
       }
+    } finally {
+      if (requestId === voteRequestSeq.current[id]) pendingVoteIds.current.delete(id);
     }
   }
 
@@ -397,6 +423,11 @@ export default function HomePage() {
           </div>
         </div>
       </header>
+
+      <button className="floating-notification" type="button" onClick={openNotifications} aria-label="Open notifications" title="Notifications">
+        <Icon name="bell" size={19} />
+        {unreadCount > 0 && <b>{unreadCount > 9 ? '9+' : unreadCount}</b>}
+      </button>
 
       <section id="top" className="hero-reference">
         <div className="hero-backdrop-grid" />
