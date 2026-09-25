@@ -6,12 +6,13 @@ export type LiveNotification = {
   created_at: string;
 };
 
-export type RemoteVote = {
-  course_id: number;
+export type LiveVoteState = {
   likes: number;
   dislikes: number;
-  user_reaction: 'like' | 'dislike' | null;
+  userVote: 'like' | 'dislike' | null;
 };
+
+export type RemoteVote = LiveVoteState & { course_id: number };
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/\/$/, '');
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -56,18 +57,30 @@ export async function fetchReactionCounts(courseIds: number[]) {
     body: JSON.stringify({ course_ids: courseIds }),
   });
   if (!response) return null;
-  return (await response.json()) as RemoteVote[];
+  const rows = (await response.json()) as Array<{ course_id: number; likes: number; dislikes: number; user_reaction?: 'like' | 'dislike' | null }>;
+  return rows.map(row => ({
+    course_id: row.course_id,
+    likes: row.likes,
+    dislikes: row.dislikes,
+    userVote: row.user_reaction ?? null,
+  }));
 }
 
-export async function setRemoteReaction(courseId: number, reaction: 'like' | 'dislike') {
+export async function setRemoteReaction(courseId: number, reaction: 'like' | 'dislike'): Promise<RemoteVote | null> {
   const sessionId = getOrCreateSessionId();
   const response = await request('/rest/v1/rpc/set_course_reaction', {
     method: 'POST',
     body: JSON.stringify({ p_course_id: courseId, p_session_id: sessionId, p_reaction: reaction }),
   });
   if (!response) return null;
-  const rows = (await response.json()) as RemoteVote[];
-  return rows[0] || null;
+  const rows = (await response.json()) as Array<{ course_id: number; likes: number; dislikes: number; user_reaction?: 'like' | 'dislike' | null }>;
+  const row = rows[0];
+  return row ? {
+    course_id: row.course_id,
+    likes: row.likes,
+    dislikes: row.dislikes,
+    userVote: row.user_reaction ?? null,
+  } : null;
 }
 
 export async function fetchCourseCount() {
