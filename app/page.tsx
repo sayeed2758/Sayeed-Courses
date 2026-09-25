@@ -221,7 +221,7 @@ export default function HomePage() {
           next[row.course_id] = {
             likes: row.likes,
             dislikes: row.dislikes,
-            userVote: row.user_reaction,
+            userVote: row.userVote,
           };
         }
         return next;
