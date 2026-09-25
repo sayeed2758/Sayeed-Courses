@@ -9,6 +9,7 @@ import {
   setRemoteReaction,
   getOrCreateSessionId,
   type LiveNotification,
+  type LiveVoteState,
 } from '../lib/live';
 
 const TELEGRAM_USERNAME = 'LWS_SPECIAL_SUPPORTS';
@@ -70,7 +71,7 @@ const faqs = [
   ['New courses ki information kahan milegi?', 'New catalogue updates Notifications Center mein publish kiye ja sakte hain.'],
 ];
 
-type VoteState = { likes: number; dislikes: number; userVote: 'like' | 'dislike' | null };
+type VoteState = LiveVoteState;
 
 type Sheet = 'category' | 'faq' | 'menu' | 'cart' | 'notifications' | null;
 
@@ -236,7 +237,19 @@ export default function HomePage() {
       const savedCart = JSON.parse(window.localStorage.getItem('sayeed_courses_cart_v2') || '[]');
       if (Array.isArray(savedCart)) setCartIds(savedCart.filter((id): id is number => Number.isInteger(id)));
       const savedVotes = JSON.parse(window.localStorage.getItem('sayeed_courses_votes_v3') || '{}');
-      if (savedVotes && typeof savedVotes === 'object') setVotes(savedVotes);
+      if (savedVotes && typeof savedVotes === 'object') {
+        const normalized: Record<number, VoteState> = {};
+        for (const [key, value] of Object.entries(savedVotes as Record<string, unknown>)) {
+          const row = value as Partial<VoteState> | null;
+          if (!row || typeof row !== 'object') continue;
+          normalized[Number(key)] = {
+            likes: Number.isFinite(Number(row.likes)) ? Number(row.likes) : 0,
+            dislikes: Number.isFinite(Number(row.dislikes)) ? Number(row.dislikes) : 0,
+            userVote: row.userVote === 'like' || row.userVote === 'dislike' ? row.userVote : null,
+          };
+        }
+        setVotes(normalized);
+      }
       const savedReads = JSON.parse(window.localStorage.getItem('sayeed_notifications_read_v1') || '[]');
       if (Array.isArray(savedReads)) setReadNotifications(savedReads.filter((id): id is string => typeof id === 'string'));
       getOrCreateSessionId();
@@ -308,7 +321,13 @@ export default function HomePage() {
     if (liveBackend) {
       const remote = await setRemoteReaction(id, next);
       if (remote) {
-        setVotes(currentVotes => ({ ...currentVotes, [id]: remote }));
+        const normalizedRemote: VoteState = {
+          likes: Number.isFinite(Number(remote.likes)) ? Number(remote.likes) : likes,
+          dislikes: Number.isFinite(Number(remote.dislikes)) ? Number(remote.dislikes) : dislikes,
+          userVote: remote.userVote === 'like' || remote.userVote === 'dislike' ? remote.userVote : null,
+        };
+        setVotes(currentVotes => ({ ...currentVotes, [id]: normalizedRemote }));
+        window.localStorage.setItem('sayeed_courses_votes_v3', JSON.stringify({ ...currentVotes, [id]: normalizedRemote }));
       }
     }
   }
