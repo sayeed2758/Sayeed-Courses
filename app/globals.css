@@ -418,3 +418,181 @@ input{outline:0}
   .coupon-entry button{min-width:76px}
 }
 @media(prefers-reduced-motion:reduce){.floating-object{animation:none!important}}
+
+
+/* ============================================================
+   CURRENT PATCH — compact layout, safe touch UX, admin polish
+   ============================================================ */
+html,body{max-width:100%;overflow-x:hidden;-webkit-text-size-adjust:100%;}
+body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;overscroll-behavior-x:none;}
+input,textarea,select,[contenteditable="true"]{-webkit-user-select:text;user-select:text;-webkit-touch-callout:text;}
+button,a,input,textarea,select{-webkit-tap-highlight-color:transparent;}
+button,a{touch-action:manipulation;}
+.reference-app{overflow-x:hidden;}
+
+/* remove the large blank areas around the hero/search while keeping breathing room */
+.hero-reference{padding:14px 0 5px;}
+.reference-tools{gap:7px;}
+.verified-row{margin-bottom:0;}
+.search-reference{margin-top:0;}
+.catalogue-reference{padding-top:13px;}
+.library-head h2{font-size:35px;}
+
+/* category drawer overlays the page instead of replacing it with a full-screen white panel */
+.sheet-overlay{background:rgba(1,5,13,.70);z-index:1000;}
+.reference-sheet{z-index:1001;}
+.category-sheet{width:min(570px,88vw);max-width:570px;border-left:1px solid rgba(91,113,197,.28);box-shadow:-24px 0 70px rgba(0,0,0,.55);}
+
+/* compact sample-like course cards */
+.course-grid-reference{grid-template-columns:minmax(0,1fr);width:min(100%,700px);gap:14px;margin-top:12px;}
+.course-card{width:100%;max-width:680px;padding:7px;border-radius:20px;}
+.course-media-shell{border-radius:16px;}
+.course-media-shell .course-art{aspect-ratio:1.9/1;border-radius:15px;}
+.course-art{min-height:0;}
+.art-topline{left:16px;right:16px;top:14px;}
+.art-topline span{font-size:16px;}
+.art-topline b{font-size:11px!important;min-width:55px!important;padding:5px 8px!important;border-radius:9px!important;}
+.course-body{padding:8px 2px 1px;}
+.course-pills{gap:5px;}
+.price-pill,.rating-pill,.category-pill{font-size:10px;padding:5px 8px;}
+.reaction-button{min-width:66px;min-height:33px;padding:0 10px;font-size:12px;}
+.course-body h3{margin:9px 0 1px;font-size:21px;line-height:1.08;}
+.course-actions{grid-template-columns:minmax(0,1fr) 108px;gap:8px;margin-top:9px;}
+.unlock-button{min-height:46px;font-size:15px;}
+.cart-button-small{min-width:108px;font-size:13px;}
+
+/* Keep the floating cart intentionally available, but never open it when adding an item. */
+.floating-cart-bar{z-index:900;}
+
+/* centred cart sheet with a dark coupon input */
+.cart-overlay{align-items:center;justify-content:center;padding:14px;}
+.cart-sheet{width:min(560px,calc(100vw - 20px));height:min(86dvh,780px);border-radius:24px;overflow:hidden;display:flex;flex-direction:column;background:linear-gradient(180deg,#081021,#07111e);}
+.cart-sheet .cart-reference,.cart-sheet .bag-reference-empty{overflow-y:auto;min-height:0;flex:1 1 auto;}
+.coupon-box{background:transparent;}
+.coupon-entry input{background:#0d1829!important;color:#f4f7fb!important;border:1px solid rgba(101,133,202,.28)!important;}
+
+/* premium background motion stays visual-only and cannot intercept taps */
+.floating-object{pointer-events:none;z-index:0;}
+.top-header,.hero-reference,.catalogue-reference,.cta-reference,.footer-reference{position:relative;z-index:2;}
+
+/* ------------------------------------------------------------
+   Admin responsive polish
+   ------------------------------------------------------------ */
+.admin-shell{min-height:100dvh;overflow-x:hidden;background:radial-gradient(900px 520px at 80% -10%,rgba(55,88,210,.12),transparent 60%),#050810;}
+.admin-topbar{padding:18px clamp(14px,3vw,30px);}
+.admin-heading h1{margin:4px 0 0;}
+.admin-heading p{margin:6px 0 0;color:#71819a;font:700 12px/1.4 var(--hand);}
+.admin-user{min-width:0;}
+.admin-user span{max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.admin-tabs{width:min(1440px,calc(100% - 28px));margin:14px auto 0;display:flex;gap:8px;overflow-x:auto;padding:0 0 3px;scrollbar-width:none;}
+.admin-tabs::-webkit-scrollbar{display:none;}
+.admin-tabs button{flex:0 0 auto;min-height:44px;padding:0 16px;border:1px solid rgba(116,140,196,.14);border-radius:13px;color:#93a0b7;background:#0c1525;font:700 15px var(--hand);}
+.admin-tabs button.active{color:#fff;border-color:rgba(36,210,235,.28);background:linear-gradient(135deg,rgba(20,101,143,.32),rgba(63,46,140,.22));}
+.admin-content{width:min(1440px,calc(100% - 28px));margin:0 auto;padding:16px 0 32px;}
+.admin-stat-grid{grid-template-columns:repeat(3,minmax(0,1fr));}
+.admin-grid-2{grid-template-columns:minmax(300px,380px) minmax(0,1fr);align-items:start;}
+.panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px;}
+.panel-head h2{margin:4px 0 0;}
+.panel-kicker{display:block;color:#f1c94e;font:700 11px/1 var(--hand);letter-spacing:.13em;}
+.panel-count{color:#667793;font:700 12px var(--hand);white-space:nowrap;}
+.admin-panel{background:linear-gradient(180deg,rgba(11,20,36,.96),rgba(7,15,27,.96));}
+.admin-info-card{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-top:16px;}
+.admin-info-card h2{margin:4px 0 5px;}
+.security-badge{flex:0 0 auto;padding:9px 12px;border-radius:999px;color:#53ebba;background:rgba(21,115,88,.13);border:1px solid rgba(52,224,173,.2);font:700 12px var(--hand);}
+.admin-form label{display:grid;gap:6px;color:#9eabc0;font:700 12px var(--hand);}
+.admin-form input,.admin-form textarea,.admin-form select{min-height:45px;background:#0b1728;border-color:rgba(109,134,194,.22);}
+.admin-form textarea{min-height:130px;}
+.secondary.compact{min-height:34px;padding:0 10px;border-radius:10px;}
+.thumbnail-upload-box{display:grid;gap:10px;padding:12px;border:1px dashed rgba(112,139,207,.24);border-radius:14px;background:rgba(10,22,39,.6);}
+.thumbnail-upload-box>div{display:grid;gap:4px;}
+.thumbnail-upload-box strong{color:#eff4fd;font:700 15px var(--hand);}
+.thumbnail-upload-box span{color:#76869f;font:700 11px/1.4 var(--hand);}
+.upload-button{width:max-content!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;min-height:38px;padding:0 12px;border:1px solid rgba(21,216,186,.25);border-radius:10px;color:#58edbd!important;background:rgba(18,107,80,.12);cursor:pointer;}
+.upload-button input{display:none;}
+.thumbnail-preview{width:100%;aspect-ratio:1.9/1;object-fit:cover;border-radius:12px;border:1px solid rgba(113,143,210,.18);}
+.thumbnail-upload-box small{color:#6d7f99;font:700 10px var(--hand);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.admin-course-list{display:grid;gap:9px;max-height:720px;overflow:auto;padding-right:2px;}
+.admin-course-row{display:grid;grid-template-columns:76px minmax(0,1fr) auto;gap:11px;align-items:center;padding:10px;border:1px solid rgba(104,131,187,.12);border-radius:14px;background:#0d1829;}
+.admin-course-thumb{width:76px;height:50px;border-radius:10px;overflow:hidden;display:grid;place-items:center;background:#142238;color:#7f8ca4;font:700 13px var(--hand);}
+.admin-course-thumb img{width:100%;height:100%;object-fit:cover;}
+.admin-course-copy{min-width:0;display:grid;gap:3px;}
+.admin-course-copy strong{color:#f5f8fd;font:700 15px/1.1 var(--hand);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.admin-course-copy span{color:#8393ab;font:700 11px/1.2 var(--hand);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.admin-course-copy small{color:#667995;font:700 10px/1.2 var(--hand);}
+.admin-row-actions{display:flex;align-items:center;gap:4px;justify-content:flex-end;}
+.admin-row-actions .table-action{margin:0;padding:7px 8px;border:1px solid transparent;border-radius:8px;}
+.admin-row-actions .table-action:hover{background:#142135;}
+.admin-row-actions .table-action.danger:hover{background:rgba(126,29,49,.2);}
+.admin-list article{align-items:center;}
+.admin-list-copy{min-width:0;flex:1 1 auto;}
+.admin-list-copy strong{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.admin-list-copy p{max-height:3.1em;overflow:hidden;}
+.admin-confirm-backdrop{position:fixed;inset:0;z-index:3000;display:grid;place-items:center;padding:18px;background:rgba(0,0,0,.72);backdrop-filter:blur(8px);}
+.admin-confirm-card{width:min(100%,390px);padding:22px;border:1px solid rgba(106,133,210,.25);border-radius:22px;background:#0a1526;box-shadow:0 30px 90px rgba(0,0,0,.55);}
+.confirm-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:13px;margin-bottom:14px;color:#ffd96f;background:rgba(121,89,19,.2);border:1px solid rgba(255,206,75,.24);font:700 20px var(--hand);}
+.admin-confirm-card h2{margin:5px 0 7px;font:700 25px var(--hand);}
+.admin-confirm-card p{margin:0;color:#8f9eb6;font:700 13px/1.55 var(--hand);}
+.admin-confirm-card p strong{color:#e9eff9;}
+.confirm-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:18px;}
+.confirm-actions button{min-height:44px;border-radius:12px;font:700 15px var(--hand);}
+.danger-fill{border:1px solid rgba(255,101,128,.22);color:#ff8da0;background:rgba(126,29,49,.22);}
+
+@media(max-width:900px){
+  .admin-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .admin-grid-2{grid-template-columns:1fr;}
+}
+@media(max-width:600px){
+  .top-header-inner{width:calc(100% - 16px);min-height:62px;}
+  .brand-logo-image{width:38px;height:38px;flex-basis:38px;}
+  .brand-copy strong{font-size:18px;}
+  .brand-copy small{font-size:7px;margin-top:5px;}
+  .top-actions{gap:3px;}
+  .app-button,.header-icon-button{height:38px;width:38px;min-width:38px;border-radius:12px;}
+  .app-button{padding:0 7px;}
+  .app-button span{font-size:13px;}
+  .faq-button{padding:0 8px!important;font-size:0!important;}
+  .faq-button svg{width:18px;}
+  .hero-reference{padding-top:11px;padding-bottom:3px;}
+  .reference-tools{width:calc(100% - 16px);gap:6px;}
+  .verified-row .verified-pill{font-size:13px;padding:8px 12px;}
+  .verified-notification{width:42px;height:42px;flex-basis:42px;}
+  .search-reference{min-height:58px;border-radius:18px;}
+  .search-reference input{font-size:17px;}
+  .mic-button{width:42px;height:42px;flex-basis:42px;}
+  .catalogue-reference{width:calc(100% - 16px);padding-top:9px;}
+  .section-kicker{font-size:11px;}
+  .library-head h2{font-size:29px;margin-top:4px;}
+  .sort-reference{height:43px;min-width:91px;font-size:14px;}
+  .course-grid-reference{width:100%;gap:12px;margin-top:9px;}
+  .course-card{padding:6px;border-radius:18px;}
+  .course-media-shell,.course-media-shell .course-art{border-radius:14px;}
+  .course-body h3{font-size:20px;}
+  .course-actions{grid-template-columns:minmax(0,1fr) 104px;}
+  .unlock-button{font-size:14px;}
+  .cart-button-small{min-width:104px;font-size:12px;}
+  .category-sheet{width:88vw;padding:14px 13px 24px;}
+  .sheet-header h2{font-size:27px;}
+  .drawer-category{min-height:58px;border-radius:14px;}
+  .cart-sheet{width:calc(100vw - 16px);height:84dvh;}
+  .admin-topbar{padding:14px 12px;align-items:flex-start;}
+  .admin-heading h1{font-size:26px;}
+  .admin-heading p{display:none;}
+  .admin-user span{display:none;}
+  .admin-user button{min-height:36px;padding:0 10px;}
+  .admin-tabs,.admin-content{width:calc(100% - 18px);}
+  .admin-tabs{margin-top:10px;}
+  .admin-tabs button{min-height:41px;padding:0 13px;font-size:14px;}
+  .admin-content{padding-top:12px;}
+  .admin-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;}
+  .admin-stat{padding:14px;border-radius:15px;}
+  .admin-stat strong{font-size:25px;}
+  .admin-panel{padding:15px;border-radius:17px;}
+  .admin-panel>h2{font-size:22px;}
+  .admin-course-row{grid-template-columns:64px minmax(0,1fr);}
+  .admin-course-thumb{width:64px;height:45px;}
+  .admin-row-actions{grid-column:1/-1;justify-content:flex-start;border-top:1px solid rgba(112,133,183,.1);padding-top:7px;}
+  .admin-info-card{align-items:flex-start;flex-direction:column;}
+  .security-badge{align-self:flex-start;}
+}
+
+@media(prefers-reduced-motion:reduce){.floating-object{animation:none!important;}.shape-a,.shape-b{animation:none!important;}}

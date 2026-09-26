@@ -311,6 +311,30 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
+    const onBeforeInstallPrompt = (event: Event) => {
+      event.preventDefault();
+      setDeferredPrompt(event);
+    };
+    const onAppInstalled = () => {
+      setDeferredPrompt(null);
+      setInstallHint('App installed successfully ✅');
+      window.setTimeout(() => setInstallHint(''), 2600);
+    };
+
+    window.addEventListener('beforeinstallprompt', onBeforeInstallPrompt as EventListener);
+    window.addEventListener('appinstalled', onAppInstalled);
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => undefined);
+    }
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', onBeforeInstallPrompt as EventListener);
+      window.removeEventListener('appinstalled', onAppInstalled);
+    };
+  }, []);
+
+  useEffect(() => {
     void loadLiveData();
     if (!liveBackend) return undefined;
     const timer = window.setInterval(() => { void loadLiveData(); }, 5000);
@@ -469,14 +493,27 @@ export default function HomePage() {
   }
 
   async function handleInstall() {
-    if (deferredPrompt) {
-      const promptEvent = deferredPrompt as Event & { prompt?: () => Promise<void>; userChoice?: Promise<{ outcome: string }> };
-      await promptEvent.prompt?.();
-      await promptEvent.userChoice?.catch(() => undefined);
-      setDeferredPrompt(null);
+    const standalone = window.matchMedia('(display-mode: standalone)').matches ||
+      Boolean((navigator as Navigator & { standalone?: boolean }).standalone);
+
+    if (standalone) {
+      showToast('Already Installed ✅');
       return;
     }
-    setInstallHint('Open browser menu → Add to Home screen / Install app.');
+
+    if (deferredPrompt) {
+      const promptEvent = deferredPrompt as Event & {
+        prompt?: () => Promise<void>;
+        userChoice?: Promise<{ outcome: string }>;
+      };
+      await promptEvent.prompt?.();
+      const choice = await promptEvent.userChoice?.catch(() => undefined);
+      setDeferredPrompt(null);
+      if (choice?.outcome === 'accepted') showToast('App installation started ✅');
+      return;
+    }
+
+    setInstallHint('Use your browser menu → Install app / Add to Home screen.');
     window.setTimeout(() => setInstallHint(''), 4200);
   }
 
