@@ -1,6 +1,7 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import type { Database } from '../../types/database';
 
-let cached: ReturnType<typeof createClient> | null = null;
+let cached: SupabaseClient<Database> | null = null;
 
 export function getAdminClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
@@ -9,7 +10,7 @@ export function getAdminClient() {
     throw new Error('Missing SUPABASE_SECRET_KEY. Add it only to the server environment.');
   }
   if (!cached) {
-    cached = createClient(url, secret, {
+    cached = createClient<Database>(url, secret, {
       auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
     });
   }
