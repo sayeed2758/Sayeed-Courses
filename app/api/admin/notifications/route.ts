@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../../lib/supabase/server';
+import { getAdminClient } from '../../../../lib/supabase/admin';
 import { assertSameOrigin, requireAdminIdentity } from '../../../../lib/admin-auth';
 
 export const dynamic = 'force-dynamic';
@@ -12,7 +12,7 @@ function dbMessage(error: unknown, fallback: string) {
 export async function GET() {
   try {
     await requireAdminIdentity();
-    const supabase = await createClient();
+    const supabase = getAdminClient();
     const { data, error } = await supabase.from('notifications').select('*').order('created_at', { ascending: false }).limit(100);
     if (error) throw error;
     return NextResponse.json({ rows: data || [] }, { headers: { 'Cache-Control': 'no-store' } });
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const payload = { title: String(body.title || '').trim(), body: String(body.body || '').trim(), type: String(body.type || 'info'), is_published: Boolean(body.is_published) };
     if (!payload.title || !payload.body) return NextResponse.json({ error: 'Title and body are required.' }, { status: 400 });
-    const supabase = await createClient();
+    const supabase = getAdminClient();
     const { data, error } = await supabase.from('notifications').insert(payload).select('id').single();
     if (error) throw error;
     await supabase.from('admin_audit_log').insert({ admin_user_id: admin.userId, action: 'notification.create', entity: 'notifications', entity_id: data?.id ?? null, detail: { title: payload.title } });
@@ -49,7 +49,7 @@ export async function PATCH(request: Request) {
     if (!Number.isInteger(id)) return NextResponse.json({ error: 'Invalid notification id.' }, { status: 400 });
     const payload = { title: String(body.title || '').trim(), body: String(body.body || '').trim(), type: String(body.type || 'info'), is_published: Boolean(body.is_published), updated_at: new Date().toISOString() };
     if (!payload.title || !payload.body) return NextResponse.json({ error: 'Title and body are required.' }, { status: 400 });
-    const supabase = await createClient();
+    const supabase = getAdminClient();
     const { error } = await supabase.from('notifications').update(payload).eq('id', id);
     if (error) throw error;
     await supabase.from('admin_audit_log').insert({ admin_user_id: admin.userId, action: 'notification.update', entity: 'notifications', entity_id: id, detail: { title: payload.title } });
@@ -66,7 +66,7 @@ export async function DELETE(request: Request) {
     const admin = await requireAdminIdentity();
     const id = Number(new URL(request.url).searchParams.get('id'));
     if (!Number.isInteger(id)) return NextResponse.json({ error: 'Invalid notification id.' }, { status: 400 });
-    const supabase = await createClient();
+    const supabase = getAdminClient();
     const { error } = await supabase.from('notifications').delete().eq('id', id);
     if (error) throw error;
     await supabase.from('admin_audit_log').insert({ admin_user_id: admin.userId, action: 'notification.delete', entity: 'notifications', entity_id: id, detail: {} });
