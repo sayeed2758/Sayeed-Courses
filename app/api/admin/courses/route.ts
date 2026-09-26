@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../../lib/supabase/server';
+import { getAdminClient } from '../../../../lib/supabase/admin';
 import { assertSameOrigin, requireAdminIdentity } from '../../../../lib/admin-auth';
 
 export const dynamic = 'force-dynamic';
@@ -12,7 +12,7 @@ function dbMessage(error: unknown, fallback: string) {
 export async function GET() {
   try {
     await requireAdminIdentity();
-    const supabase = await createClient();
+    const supabase = getAdminClient();
     const { data, error } = await supabase.from('course_catalogue').select('*').order('id', { ascending: true });
     if (error) throw error;
     return NextResponse.json({ rows: data || [] }, { headers: { 'Cache-Control': 'no-store' } });
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
     if (!payload.title || !payload.category || !Number.isFinite(payload.price)) {
       return NextResponse.json({ error: 'Title, category and price are required.' }, { status: 400 });
     }
-    const supabase = await createClient();
+    const supabase = getAdminClient();
     const { data, error } = await supabase.from('course_catalogue').insert(payload).select('id').single();
     if (error) throw error;
     await supabase.from('admin_audit_log').insert({ admin_user_id: admin.userId, action: 'course.create', entity: 'course_catalogue', entity_id: data?.id ?? null, detail: { title: payload.title } });
@@ -72,7 +72,7 @@ export async function PATCH(request: Request) {
       updated_at: new Date().toISOString(),
     };
     if (!payload.title || !payload.category || !Number.isFinite(payload.price)) return NextResponse.json({ error: 'Title, category and price are required.' }, { status: 400 });
-    const supabase = await createClient();
+    const supabase = getAdminClient();
     const { error } = await supabase.from('course_catalogue').update(payload).eq('id', id);
     if (error) throw error;
     await supabase.from('admin_audit_log').insert({ admin_user_id: admin.userId, action: 'course.update', entity: 'course_catalogue', entity_id: id, detail: { title: payload.title } });
@@ -89,7 +89,7 @@ export async function DELETE(request: Request) {
     const admin = await requireAdminIdentity();
     const id = Number(new URL(request.url).searchParams.get('id'));
     if (!Number.isInteger(id)) return NextResponse.json({ error: 'Invalid course id.' }, { status: 400 });
-    const supabase = await createClient();
+    const supabase = getAdminClient();
     const { error } = await supabase.from('course_catalogue').delete().eq('id', id);
     if (error) throw error;
     await supabase.from('admin_audit_log').insert({ admin_user_id: admin.userId, action: 'course.delete', entity: 'course_catalogue', entity_id: id, detail: {} });
