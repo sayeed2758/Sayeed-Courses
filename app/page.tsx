@@ -35,9 +35,14 @@ const DEMO_COURSES: LiveCourse[] = Array.from({ length: 24 }, (_, index) => {
     number: index + 1,
     title: titles[index % titles.length],
     category: categoryNames[index % categoryNames.length],
+    educator: 'Sayeed Academy',
+    meta: '',
     price: [299, 199, 399, 249][index % 4],
     rating: Number((4 + (((index * 7 + 3) % 11) / 10)).toFixed(1)),
     reviews: 120 + ((index * 41) % 260),
+    likes: 0,
+    dislikes: 0,
+    is_published: true,
     initial_likes: 0,
     initial_dislikes: 0,
     thumbnail_url: null,
@@ -280,6 +285,28 @@ export default function HomePage() {
   }, [liveBackend]);
 
   useEffect(() => {
+    try {
+      const savedCart = window.localStorage.getItem('sayeed_courses_cart_v3');
+      if (savedCart) {
+        const parsed = JSON.parse(savedCart);
+        if (Array.isArray(parsed)) setCartIds(parsed.map(Number).filter(Number.isFinite));
+      }
+      const savedRead = window.localStorage.getItem('sayeed_notifications_read_v2');
+      if (savedRead) {
+        const parsed = JSON.parse(savedRead);
+        if (Array.isArray(parsed)) setReadNotifications(parsed.map(String));
+      }
+      const savedVotes = window.localStorage.getItem('sayeed_courses_votes_v4');
+      if (savedVotes) {
+        const parsed = JSON.parse(savedVotes);
+        if (parsed && typeof parsed === 'object') setVotes(parsed);
+      }
+    } catch {
+      // Ignore malformed legacy localStorage values and continue with safe defaults.
+    }
+  }, []);
+
+  useEffect(() => {
     void loadLiveData();
     if (!liveBackend) return undefined;
     const timer = window.setInterval(() => { void loadLiveData(); }, 5000);
@@ -371,13 +398,19 @@ export default function HomePage() {
   }
 
   function toggleCart(id: number) {
-    setCartIds(current => {
-      const next = current.includes(id) ? current.filter(item => item !== id) : [...current, id];
-      window.localStorage.setItem('sayeed_courses_cart_v3', JSON.stringify(next));
-      if (current.includes(id)) setAppliedCoupon(null);
-      else if (next.length === 0) setAppliedCoupon(null);
-      return next;
-    });
+    const alreadyInCart = cartIds.includes(id);
+    const next = alreadyInCart ? cartIds.filter(item => item !== id) : [...cartIds, id];
+    setCartIds(next);
+    window.localStorage.setItem('sayeed_courses_cart_v3', JSON.stringify(next));
+
+    if (alreadyInCart) {
+      setAppliedCoupon(null);
+      showToast('Removed from cart');
+      return;
+    }
+
+    setSheet('cart');
+    showToast('Added to cart 🛒');
   }
 
   function clearCart() {
