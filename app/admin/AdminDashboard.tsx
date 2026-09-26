@@ -35,16 +35,14 @@ export default function AdminDashboard({ admin }: { admin: AdminIdentity }) {
   const [notice, setNotice] = useState('');
 
   async function loadAll() {
-    const [courseData, notificationData, couponData, statsData] = await Promise.all([
-      api('/api/admin/courses'),
-      api('/api/admin/notifications'),
-      api('/api/admin/coupons'),
-      api('/api/admin/stats'),
-    ]);
-    setCourses(courseData.rows || []);
-    setNotifications(notificationData.rows || []);
-    setCoupons(couponData.rows || []);
-    setStats(statsData || {});
+    const results = await Promise.allSettled([api('/api/admin/courses'), api('/api/admin/notifications'), api('/api/admin/coupons'), api('/api/admin/stats')]);
+    const [courseResult, notificationResult, couponResult, statsResult] = results;
+    const errors: string[] = [];
+    if (courseResult.status === 'fulfilled') setCourses(courseResult.value.rows || []); else errors.push(courseResult.reason instanceof Error ? courseResult.reason.message : 'Courses unavailable');
+    if (notificationResult.status === 'fulfilled') setNotifications(notificationResult.value.rows || []); else errors.push(notificationResult.reason instanceof Error ? notificationResult.reason.message : 'Notifications unavailable');
+    if (couponResult.status === 'fulfilled') setCoupons(couponResult.value.rows || []); else errors.push(couponResult.reason instanceof Error ? couponResult.reason.message : 'Coupons unavailable');
+    if (statsResult.status === 'fulfilled') setStats(statsResult.value || {}); else errors.push(statsResult.reason instanceof Error ? statsResult.reason.message : 'Stats unavailable');
+    if (errors.length) throw new Error(errors[0]);
   }
 
   useEffect(() => { loadAll().catch(err => setNotice(err.message)); }, []);
