@@ -301,70 +301,7 @@ input{outline:0}
   .coupon-entry{grid-template-columns:minmax(0,1fr) 76px}
 }
 
-/* ============================================================
-   POLISH FIX — SAFE BACKGROUND MOTION + NOTIFICATION PLACEMENT
-   No layout/content replacement. Visual layer only.
-   ============================================================ */
-.reference-app{
-  position:relative;
-  isolation:isolate;
-}
-.reference-app::before,
-.reference-app::after{
-  content:"";
-  position:fixed;
-  z-index:0;
-  pointer-events:none;
-  border:1px solid rgba(56,214,239,.09);
-  border-radius:50%;
-  background:radial-gradient(circle at 45% 42%,rgba(17,217,236,.075),transparent 58%);
-  box-shadow:0 0 80px rgba(32,118,255,.045),inset 0 0 70px rgba(104,83,255,.035);
-  will-change:transform;
-}
-.reference-app::before{
-  width:390px;height:390px;
-  left:-145px;top:18vh;
-  animation:ambientOrbitA 24s ease-in-out infinite;
-}
-.reference-app::after{
-  width:480px;height:480px;
-  right:-205px;top:46vh;
-  animation:ambientOrbitB 30s ease-in-out infinite;
-}
-.reference-app > *{position:relative;z-index:1}
-
-@keyframes ambientOrbitA{
-  0%,100%{transform:translate3d(0,0,0) rotate(0deg) scale(1)}
-  35%{transform:translate3d(34px,18px,0) rotate(5deg) scale(1.03)}
-  70%{transform:translate3d(12px,52px,0) rotate(9deg) scale(.98)}
-}
-@keyframes ambientOrbitB{
-  0%,100%{transform:translate3d(0,0,0) rotate(0deg) scale(1)}
-  40%{transform:translate3d(-28px,-24px,0) rotate(-6deg) scale(1.04)}
-  76%{transform:translate3d(-10px,24px,0) rotate(-11deg) scale(.97)}
-}
-
-.floating-notification-button{
-  top:22px;
-  right:18px;
-  width:49px;
-  height:49px;
-  border-radius:15px;
-  border-color:rgba(16,217,236,.28);
-  background:rgba(7,19,34,.82);
-  box-shadow:0 12px 32px rgba(0,0,0,.26),0 0 0 1px rgba(16,217,236,.035) inset;
-}
-.floating-notification-button:hover{
-  transform:translateY(-1px);
-  box-shadow:0 15px 34px rgba(0,0,0,.28),0 0 22px rgba(16,217,236,.07);
-}
-.floating-notification-button svg{filter:drop-shadow(0 0 8px rgba(16,217,236,.22))}
-
-@media(max-width:760px){
-  .reference-app::before{width:320px;height:320px;left:-150px;top:17vh}
-  .reference-app::after{width:390px;height:390px;right:-205px;top:52vh}
-  .floating-notification-button{top:18px;right:14px;width:46px;height:46px;border-radius:14px}
-}
-@media(prefers-reduced-motion:reduce){
-  .reference-app::before,.reference-app::after,.shape-a,.shape-b{animation:none!important}
-}
+/* FINAL STABILITY + SAMPLE MATCH — keep existing UI/admin styles intact */
+.reference-tools{position:relative;z-index:5}.verified-row{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;margin-bottom:14px}.verified-row .verified-pill{margin:0;max-width:calc(100% - 56px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.verified-notification{position:relative;flex:0 0 46px;width:46px;height:46px;border:1px solid rgba(25,210,235,.25);border-radius:14px;display:grid;place-items:center;color:#17dbe7;background:rgba(8,24,40,.86);box-shadow:0 10px 28px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.03);backdrop-filter:blur(14px);cursor:pointer;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}.verified-notification:hover{transform:translateY(-1px);border-color:rgba(25,224,241,.5);box-shadow:0 14px 30px rgba(0,0,0,.28),0 0 22px rgba(25,224,241,.08)}.verified-notification b{position:absolute;top:-6px;right:-5px;min-width:18px;height:18px;padding:0 4px;display:grid;place-items:center;border-radius:999px;border:2px solid #07101d;color:#251e05;background:#ffd14d;font:700 9px/.9 var(--hand)}
+.course-grid-reference{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;width:min(100%,700px);margin:0 auto}.course-card{width:100%;max-width:700px;margin:0 auto;padding:8px;border-radius:22px;background:rgba(9,17,30,.90);border:1px solid rgba(112,143,213,.18);box-shadow:0 20px 55px rgba(0,0,0,.20)}.course-media-shell{overflow:hidden;border:1px solid rgba(115,144,210,.16);border-radius:17px;background:#091321}.course-art{aspect-ratio:1.92/1;min-height:0;border-radius:16px}.art-topline b{font-size:15px;line-height:1;padding:7px 11px;border-radius:11px;min-width:76px;text-align:center}.art-topline span{font-size:17px}.course-body{padding:9px 2px 1px}.price-pill,.rating-pill,.category-pill{padding:6px 9px;font-size:11px}.engagement-row{margin-top:7px;gap:7px}.reaction-button{min-height:33px;padding:0 12px;border-radius:999px;font-size:12px}.course-body h3{margin:10px 0 2px;font-size:21px;line-height:1.08}.course-actions{grid-template-columns:minmax(0,1fr) 112px;gap:8px;margin-top:10px}.unlock-button{min-height:46px;font-size:16px}.cart-button-small{min-width:0;font-size:13px}.sheet-overlay{z-index:1000}.reference-sheet{z-index:1001}.toast-message,.install-hint{z-index:1100}.floating-cart-bar{z-index:900}
+@media(min-width:900px){.course-grid-reference{grid-template-columns:repeat(2,minmax(0,1fr));max-width:1080px}.course-card{max-width:none}}@media(max-width:600px){.verified-row{gap:8px;margin-bottom:12px}.verified-row .verified-pill{font-size:12px;padding-inline:13px}.verified-notification{width:44px;height:44px;flex-basis:44px;border-radius:13px}.course-card{padding:7px;border-radius:20px}.course-media-shell,.course-art{border-radius:15px}.course-art{aspect-ratio:1.88/1}.art-topline b{font-size:14px;min-width:72px;padding:7px 9px;border-radius:10px}.art-topline span{font-size:16px}.course-actions{grid-template-columns:minmax(0,1fr) 106px}.course-body h3{font-size:20px}}@media(prefers-reduced-motion:reduce){.reference-app::before,.reference-app::after,.ambient,.shape-a,.shape-b{animation:none!important}}
