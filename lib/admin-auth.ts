@@ -1,5 +1,4 @@
 import { createClient as createServerSupabase } from './supabase/server';
-import { getAdminClient } from './supabase/admin';
 
 export type AdminIdentity = {
   userId: string;
@@ -21,9 +20,8 @@ export async function getAdminIdentity(): Promise<AdminIdentity | null> {
   const user = await getSignedInUser();
   if (!user) return null;
 
-  let admin: ReturnType<typeof getAdminClient>;
-  try { admin = getAdminClient(); } catch { return null; }
-  const { data, error } = await admin
+  const supabase = await createServerSupabase();
+  const { data, error } = await supabase
     .from('admin_users')
     .select('user_id,email,role,is_active')
     .eq('user_id', user.id)
