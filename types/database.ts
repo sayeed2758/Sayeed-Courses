@@ -207,6 +207,10 @@ export type Database = {
         Args: { p_course_id: number; p_session_id: string; p_reaction: string };
         Returns: Array<{ course_id: number; likes: number; dislikes: number; user_reaction: string | null }>;
       };
+      validate_coupon: {
+        Args: { p_code: string };
+        Returns: Array<{ valid: boolean; code: string | null; discount_percent: number | null; reason: string }>;
+      };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
