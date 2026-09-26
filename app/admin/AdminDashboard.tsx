@@ -11,7 +11,7 @@ type Coupon = { id: number; code: string; discount_percent: number; expires_at: 
 async function api(path: string, init?: RequestInit) {
   const response = await fetch(path, { ...init, cache: 'no-store', headers: { 'Content-Type': 'application/json', ...(init?.headers || {}) } });
   const data = await response.json().catch(() => null);
-  if (!response.ok) throw new Error(data?.error || 'Request failed.');
+  if (!response.ok) throw new Error(data?.error || `Request failed (${response.status}).`);
   return data;
 }
 
@@ -36,7 +36,10 @@ export default function AdminDashboard({ admin }: { admin: AdminIdentity }) {
 
   async function loadAll() {
     const [courseData, notificationData, couponData, statsData] = await Promise.all([
-      api('/api/admin/courses'), api('/api/admin/notifications'), api('/api/admin/coupons'), api('/api/admin/stats'),
+      api('/api/admin/courses'),
+      api('/api/admin/notifications'),
+      api('/api/admin/coupons'),
+      api('/api/admin/stats'),
     ]);
     setCourses(courseData.rows || []);
     setNotifications(notificationData.rows || []);
