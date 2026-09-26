@@ -3,6 +3,7 @@
   "short_name": "Sayeed Courses",
   "description": "Premium course discovery and learning hub.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#040714",
   "theme_color": "#080b16",
