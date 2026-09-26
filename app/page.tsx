@@ -42,7 +42,7 @@ const categories = [
 
 const sortOptions = ['Recommended', 'Newest', 'A — Z', 'Category'];
 
-const fallbackCourses = Array.from({ length: 24 }, (_, index) => {
+const fallbackCourses: LiveCourse[] = Array.from({ length: 24 }, (_, index) => {
   const categoryNames = ['Coding & Tech', 'AI & Automation', 'Finance & Taxation', 'Personal Growth & Mindset'];
   const palette = ['teal', 'orange', 'purple', 'blue'][index % 4];
   const number = index + 1;
@@ -220,13 +220,19 @@ export default function HomePage() {
 
   const loadLiveData = useCallback(async () => {
     if (!liveBackend) return;
-    const [remoteCatalogue, remoteVotes, remoteCount, remoteNotifications] = await Promise.all([
-      fetchCourseCatalogue(),
-      fetchReactionCounts(courses.map(course => course.id)),
+
+    // Load the catalogue first so reaction queries always use the
+    // current Supabase course IDs (including newly-added courses).
+    const remoteCatalogue = await fetchCourseCatalogue();
+    if (remoteCatalogue) setCourses(remoteCatalogue);
+
+    const sourceCourses = remoteCatalogue ?? courses;
+    const [remoteVotes, remoteCount, remoteNotifications] = await Promise.all([
+      fetchReactionCounts(sourceCourses.map(course => course.id)),
       fetchCourseCount(),
       fetchNotifications(),
     ]);
-    if (remoteCatalogue?.length) { setCourses(remoteCatalogue); }
+
     if (remoteVotes) {
       setVotes(current => {
         const next = { ...current };
@@ -240,9 +246,10 @@ export default function HomePage() {
         return next;
       });
     }
+
     if (typeof remoteCount === 'number') setCatalogueCount(remoteCount);
     if (remoteNotifications?.length) setNotifications(remoteNotifications);
-  }, [liveBackend]);
+  }, [liveBackend, courses]);
 
   useEffect(() => {
     try {
@@ -298,9 +305,9 @@ export default function HomePage() {
     if (sort === 'A — Z') result = [...result].sort((a, b) => a.title.localeCompare(b.title));
     if (sort === 'Category') result = [...result].sort((a, b) => a.category.localeCompare(b.category));
     return result;
-  }, [query, category, sort]);
+  }, [courses, query, category, sort]);
 
-  const cartCourses = cartIds.map(id => courses.find(course => course.id === id)).filter((course): course is (typeof fallbackCourses)[number] => Boolean(course));
+  const cartCourses = cartIds.map(id => courses.find(course => course.id === id)).filter((course): course is LiveCourse => Boolean(course));
   const cartTotal = cartCourses.reduce((sum, course) => sum + course.price, 0);
   const unreadCount = notifications.filter(item => !readNotifications.includes(String(item.id))).length;
 
@@ -325,9 +332,12 @@ export default function HomePage() {
       else dislikes += 1;
       userVote = next;
     }
-    const optimistic = { likes, dislikes, userVote };
-    setVotes(currentVotes => ({ ...currentVotes, [id]: optimistic }));
-    window.localStorage.setItem('sayeed_courses_votes_v3', JSON.stringify({ ...votes, [id]: optimistic }));
+    const optimistic: VoteState = { likes, dislikes, userVote };
+    setVotes(currentVotes => {
+      const nextVotes = { ...currentVotes, [id]: optimistic };
+      window.localStorage.setItem('sayeed_courses_votes_v3', JSON.stringify(nextVotes));
+      return nextVotes;
+    });
     showToast(next === 'like' ? 'Liked Course 👍' : 'Disliked Course 👎');
 
     if (liveBackend) {
