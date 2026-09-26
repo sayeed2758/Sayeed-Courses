@@ -11,6 +11,7 @@ import {
   getOrCreateSessionId,
   type LiveNotification,
   type LiveVoteState,
+  type LiveCourse,
 } from '../lib/live';
 
 const TELEGRAM_USERNAME = 'LWS_SPECIAL_SUPPORTS';
@@ -206,7 +207,7 @@ export default function HomePage() {
   const [votes, setVotes] = useState<Record<number, VoteState>>({});
   const [notifications, setNotifications] = useState<LiveNotification[]>(DEFAULT_NOTIFICATIONS);
   const [readNotifications, setReadNotifications] = useState<string[]>([]);
-  const [courses, setCourses] = useState(fallbackCourses);
+  const [courses, setCourses] = useState<LiveCourse[]>(fallbackCourses);
   const [catalogueCount, setCatalogueCount] = useState(fallbackCourses.length);
   const [toast, setToast] = useState('');
 
