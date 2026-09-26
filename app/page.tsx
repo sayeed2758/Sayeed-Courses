@@ -163,7 +163,7 @@ function CourseCard({
 }) {
   return (
     <article className="course-card">
-      <CourseArtwork course={course} />
+      <div className="course-media-shell"><CourseArtwork course={course} /></div>
       <div className="course-body">
         <div className="course-pills">
           <span className="price-pill">₹{course.price}</span>
@@ -210,6 +210,11 @@ export default function HomePage() {
   const [courses, setCourses] = useState<LiveCourse[]>(fallbackCourses);
   const [catalogueCount, setCatalogueCount] = useState(fallbackCourses.length);
   const [toast, setToast] = useState('');
+  const [couponExpanded, setCouponExpanded] = useState(false);
+  const [couponInput, setCouponInput] = useState('');
+  const [couponDiscount, setCouponDiscount] = useState(0);
+  const [appliedCoupon, setAppliedCoupon] = useState('');
+  const [couponStatus, setCouponStatus] = useState<'idle' | 'checking' | 'valid' | 'not_valid' | 'expired'>('idle');
 
   const liveBackend = isLiveBackendConfigured();
 
@@ -247,7 +252,8 @@ export default function HomePage() {
       });
     }
 
-    if (typeof remoteCount === 'number') setCatalogueCount(remoteCount);
+    if (remoteCatalogue) setCatalogueCount(remoteCatalogue.length);
+    else if (typeof remoteCount === 'number') setCatalogueCount(remoteCount);
     if (remoteNotifications?.length) setNotifications(remoteNotifications);
   }, [liveBackend, courses]);
 
@@ -309,6 +315,8 @@ export default function HomePage() {
 
   const cartCourses = cartIds.map(id => courses.find(course => course.id === id)).filter((course): course is LiveCourse => Boolean(course));
   const cartTotal = cartCourses.reduce((sum, course) => sum + course.price, 0);
+  const discountAmount = couponDiscount > 0 ? Math.round((cartTotal * couponDiscount) / 100) : 0;
+  const cartFinalTotal = Math.max(0, cartTotal - discountAmount);
   const unreadCount = notifications.filter(item => !readNotifications.includes(String(item.id))).length;
 
   function getVote(id: number): VoteState {
@@ -365,6 +373,29 @@ export default function HomePage() {
     });
   }
 
+  async function applyCoupon() {
+    const code = couponInput.trim().toUpperCase();
+    if (!code) { setCouponStatus('not_valid'); showToast('Coupon Not Valid'); return; }
+    setCouponStatus('checking');
+    try {
+      const response = await fetch('/api/coupons/validate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code }), cache: 'no-store' });
+      const result = await response.json().catch(() => ({ valid: false, reason: 'not_valid' }));
+      if (result.valid) {
+        const discount = Math.min(100, Math.max(1, Number(result.discount_percent) || 0));
+        setCouponDiscount(discount); setAppliedCoupon(String(result.code || code)); setCouponStatus('valid');
+        showToast(`Coupon Applied · ${discount}% OFF`);
+      } else if (result.reason === 'expired') {
+        setCouponDiscount(0); setAppliedCoupon(''); setCouponStatus('expired'); showToast('Coupon Expired');
+      } else {
+        setCouponDiscount(0); setAppliedCoupon(''); setCouponStatus('not_valid'); showToast('Coupon Not Valid');
+      }
+    } catch {
+      setCouponDiscount(0); setAppliedCoupon(''); setCouponStatus('not_valid'); showToast('Coupon Not Valid');
+    }
+  }
+
+  function clearCoupon() { setCouponInput(''); setCouponDiscount(0); setAppliedCoupon(''); setCouponStatus('idle'); }
+
   function refreshCatalogue() {
     setRefreshing(true);
     window.setTimeout(() => window.location.reload(), 500);
@@ -391,7 +422,8 @@ export default function HomePage() {
 
   function buyAllOnTelegram() {
     const lines = cartCourses.map((course, index) => `${index + 1}. ${course.title} (₹${course.price})`);
-    const message = `Hey, I want to purchase these ${cartCourses.length} courses:\n\n${lines.join('\n')}\n\nTotal Package: ₹${cartTotal}\n\nPlease share payment details for instant access!`;
+    const couponLine = appliedCoupon ? `\nCoupon: ${appliedCoupon} (${couponDiscount}% OFF)\nDiscount: -₹${discountAmount}\nFinal Total: ₹${cartFinalTotal}` : `\nTotal Package: ₹${cartTotal}`;
+    const message = `Hey, I want to purchase these ${cartCourses.length} courses:\n\n${lines.join('\n')}${couponLine}\n\nPlease share payment details for instant access!`;
     window.open(getTelegramUrl(message), '_blank', 'noopener,noreferrer');
   }
 
@@ -412,7 +444,7 @@ export default function HomePage() {
             <a className="header-icon-button cyan" href={getTelegramUrl()} target="_blank" rel="noreferrer" aria-label="Telegram support" title={TELEGRAM_USERNAME}><Icon name="send" size={19} /></a>
             {cartCourses.length > 0 && <button className="header-icon-button cart-head-button" type="button" onClick={() => setSheet('cart')} aria-label="Open cart" title="Cart"><Icon name="bag" size={18} /><b>{cartCourses.length}</b></button>}
             <button className={refreshing ? 'header-icon-button spinning' : 'header-icon-button'} type="button" onClick={refreshCatalogue} aria-label="Refresh app" title="Refresh"><Icon name="refresh" size={19} /></button>
-            <button className="header-icon-button menu-button" type="button" onClick={() => setSheet('menu')} aria-label="Menu"><Icon name="menu" size={21} /></button>
+            <button className="header-icon-button menu-button" type="button" onClick={() => setSheet('category')} aria-label="Course categories"><Icon name="menu" size={21} /></button>
           </div>
         </div>
       </header>
@@ -430,6 +462,10 @@ export default function HomePage() {
             <button className="mic-button" type="button" aria-label="Voice search" title="Voice search"><Icon name="mic" size={19} /></button>
           </div>
         </div>
+        <button className="floating-notification-button" type="button" onClick={openNotifications} aria-label="Notifications" title="Notifications">
+          <Icon name="bell" size={20} />
+          {unreadCount > 0 && <b>{unreadCount > 99 ? '99+' : unreadCount}</b>}
+        </button>
       </section>
 
       <section id="courses" className="catalogue-reference">
@@ -503,7 +539,27 @@ export default function HomePage() {
             {sheet === 'cart' && (
               <>
                 <div className="sheet-header"><div className="sheet-title-icon"><Icon name="bag" size={23} /></div><h2>Selected Courses Cart ({cartCourses.length})</h2><button type="button" onClick={() => setSheet(null)} aria-label="Close"><Icon name="x" size={21} /></button></div>
-                {cartCourses.length === 0 ? <div className="bag-reference-empty"><div className="bag-big"><Icon name="bag" size={30} /></div><h3>Your cart is empty</h3><p>Save courses from the catalogue and they will appear here with a live total.</p><button type="button" onClick={() => setSheet(null)}>BROWSE COURSES</button></div> : <div className="cart-reference"><div className="cart-summary"><div><small>{cartCourses.length} {cartCourses.length === 1 ? 'course' : 'courses'} selected</small><strong>₹{cartTotal.toLocaleString('en-IN')}</strong></div><span>LIVE TOTAL</span></div><div className="cart-list">{cartCourses.map(course => <div className="cart-row" key={course.id}><div><small>#{String(course.number).padStart(3, '0')} · {course.category}</small><strong>{course.title}</strong></div><div className="cart-row-actions"><b>₹{course.price}</b><button type="button" onClick={() => toggleCart(course.id)} aria-label={`Remove ${course.title}`}>✕</button></div></div>)}</div><div className="cart-grand-total"><span>Combined Total</span><strong>₹{cartTotal.toLocaleString('en-IN')}</strong></div><div className="cart-actions"><button type="button" className="clear-cart" onClick={() => { setCartIds([]); window.localStorage.removeItem('sayeed_courses_cart_v2'); }}>🗑 Clear Cart</button><button type="button" className="buy-all" onClick={buyAllOnTelegram}>✈ Buy All Courses on Telegram</button></div></div>}
+                {cartCourses.length === 0 ? <div className="bag-reference-empty"><div className="bag-big"><Icon name="bag" size={30} /></div><h3>Your cart is empty</h3><p>Save courses from the catalogue and they will appear here with a live total.</p><button type="button" onClick={() => setSheet(null)}>BROWSE COURSES</button></div> : <div className="cart-reference">
+                  <div className="cart-summary"><div><small>Total Selected Items</small><strong>{cartCourses.length} {cartCourses.length === 1 ? 'course' : 'courses'}</strong></div><span>LIVE TOTAL</span></div>
+                  <div className="cart-list">{cartCourses.map(course => <div className="cart-row" key={course.id}>
+                    <div className="cart-row-main"><div className={`cart-thumb ${course.palette}`}>{course.thumbnail_url ? <img src={course.thumbnail_url} alt="" loading="lazy" /> : <span>#{String(course.number).padStart(3, '0')}</span>}</div><div className="cart-row-copy"><strong>{course.title}</strong><span>{course.category}</span></div></div>
+                    <div className="cart-row-actions"><b>₹{course.price.toLocaleString('en-IN')}</b><button type="button" onClick={() => toggleCart(course.id)} aria-label={`Remove ${course.title}`}>🗑</button></div>
+                  </div>)}</div>
+                  <div className="cart-totals">
+                    <div className="cart-total-line"><span>Subtotal</span><strong>₹{cartTotal.toLocaleString('en-IN')}</strong></div>
+                    <button type="button" className={`coupon-trigger ${couponDiscount > 0 ? 'applied' : ''}`} onClick={() => setCouponExpanded(v => !v)}>🎟 Do you have any Coupon Code? <span>{couponDiscount > 0 ? `${couponDiscount}% OFF` : (couponExpanded ? '⌃' : '⌄')}</span></button>
+                    {couponExpanded && <div className="coupon-box">
+                      <div className="coupon-entry"><input value={couponInput} onChange={e => { setCouponInput(e.target.value.toUpperCase()); if (couponStatus !== 'idle') setCouponStatus('idle'); }} placeholder="Enter coupon code" aria-label="Coupon code" maxLength={40} onKeyDown={e => { if (e.key === 'Enter') applyCoupon(); }} /><button type="button" onClick={applyCoupon} disabled={couponStatus === 'checking'}>{couponStatus === 'checking' ? 'CHECKING…' : 'APPLY'}</button></div>
+                      {couponStatus === 'valid' && <div className="coupon-status valid">✓ {appliedCoupon} applied · {couponDiscount}% discount</div>}
+                      {couponStatus === 'expired' && <div className="coupon-status expired">Coupon Expired</div>}
+                      {couponStatus === 'not_valid' && <div className="coupon-status invalid">Not Valid</div>}
+                      {couponDiscount > 0 && <button type="button" className="coupon-remove" onClick={clearCoupon}>Remove coupon</button>}
+                    </div>}
+                    {discountAmount > 0 && <div className="cart-total-line discount"><span>Discount ({couponDiscount}%)</span><strong>-₹{discountAmount.toLocaleString('en-IN')}</strong></div>}
+                    <div className="cart-grand-total"><span>Combined Total</span><strong>₹{cartFinalTotal.toLocaleString('en-IN')}</strong></div>
+                  </div>
+                  <div className="cart-actions"><button type="button" className="clear-cart" onClick={() => { setCartIds([]); clearCoupon(); window.localStorage.removeItem('sayeed_courses_cart_v2'); }}>🗑 Clear Cart</button><button type="button" className="buy-all" onClick={buyAllOnTelegram}>✈ Buy All Courses on Telegram</button></div>
+                </div>}
               </>
             )}
           </aside>

@@ -172,6 +172,13 @@ input{outline:0}
 @media (max-width:390px){
   .brand-logo-image{width:34px;height:34px;flex-basis:34px}.brand-copy strong{font-size:17px}.top-actions{gap:2px}.app-button,.header-icon-button{width:34px;min-width:34px;height:34px}.verified-pill{font-size:14px;padding:9px 12px}.search-reference{min-height:60px}.search-reference input{font-size:16px}.mic-button{width:42px;height:42px;flex-basis:42px;border-radius:13px!important}.library-head h2{font-size:27px}.sort-reference{height:44px;min-width:94px;font-size:14px}.course-body h3{font-size:22px}.floating-cart-bar{grid-template-columns:auto 1fr 1.6fr}.floating-view-cart{font-size:13px}.floating-buy{font-size:13px}
 }
+
+/* Subtle ambient motion — visual polish only, no layout change. */
+@keyframes ambientFloatA{0%,100%{transform:translate3d(0,0,0) rotate(0deg)}50%{transform:translate3d(18px,12px,0) rotate(4deg)}}
+@keyframes ambientFloatB{0%,100%{transform:translate3d(0,0,0) rotate(0deg)}50%{transform:translate3d(-16px,-10px,0) rotate(-3deg)}}
+.shape-a{animation:ambientFloatA 18s ease-in-out infinite}
+.shape-b{animation:ambientFloatB 22s ease-in-out infinite}
+
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.loader-progress span,.spinning svg{animation:none}.app-button,.header-icon-button,.reaction-button{transition:none}}
 
 /* ===============================
@@ -187,3 +194,109 @@ input{outline:0}
 .course-real-thumbnail{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:inherit}
 .course-art{position:relative;overflow:hidden}
 .course-real-thumbnail + .art-topline,.course-real-thumbnail ~ .art-brand{z-index:2}
+
+/* ============================================================
+   SAMPLE-MATCH POLISH PATCH — KEEP ADMIN + EXISTING UI INTACT
+   ============================================================ */
+.course-card{
+  max-width: 680px;
+  width: 100%;
+  margin-inline: auto;
+  padding: 10px;
+  border-radius: 24px;
+}
+.course-media-shell{overflow:hidden;border:1px solid rgba(113,143,210,.15);border-radius:18px;background:#091321}
+.course-art{border:0;border-radius:18px}
+.course-body{padding:10px 4px 2px}
+.course-pills{gap:6px}
+.price-pill,.rating-pill,.category-pill{padding:7px 10px;font-size:12px}
+.engagement-row{margin-top:8px;gap:7px}
+.reaction-button{min-height:34px;padding:0 13px;border-radius:999px}
+.course-body h3{margin:11px 0 2px;font-size:24px}
+.course-actions{margin-top:11px}
+.unlock-button{min-height:49px}
+.cart-button-small{min-width:118px}
+.course-real-thumbnail{border-radius:18px}
+
+.floating-notification-button{
+  position:absolute;
+  top:28px;
+  right:18px;
+  z-index:5;
+  width:50px;
+  height:50px;
+  border:1px solid rgba(24,214,235,.25);
+  border-radius:16px;
+  display:grid;
+  place-items:center;
+  color:var(--cyan);
+  background:rgba(9,24,39,.86);
+  box-shadow:0 12px 30px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.03);
+  backdrop-filter:blur(14px);
+}
+.floating-notification-button b{
+  position:absolute;top:-6px;right:-5px;min-width:19px;height:19px;padding:0 5px;
+  display:grid;place-items:center;border-radius:999px;border:2px solid #08101d;
+  color:#2a2107;background:var(--yellow);font:700 10px/.9 var(--hand)
+}
+
+/* Make the category drawer the primary top-right menu action, like the reference. */
+.category-drawer-list{max-height:calc(100dvh - 175px);overflow:auto;padding-right:4px}
+
+/* Reference-like cart rows with compact thumbnails. */
+.cart-row{grid-template-columns:minmax(0,1fr) auto;min-height:72px;padding:10px 12px}
+.cart-row-main{display:flex;align-items:center;gap:11px;min-width:0}
+.cart-thumb{width:62px;height:52px;flex:0 0 62px;overflow:hidden;display:grid;place-items:center;border:1px solid rgba(132,157,224,.2);border-radius:11px;background:#132036;color:#dce5f3;font:700 12px var(--hand);position:relative}
+.cart-thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.cart-thumb.teal{background:linear-gradient(135deg,#0a3b40,#0d8b77)}
+.cart-thumb.orange{background:linear-gradient(135deg,#52200b,#c35a0e)}
+.cart-thumb.purple{background:linear-gradient(135deg,#2b1245,#6a2b91)}
+.cart-thumb.blue{background:linear-gradient(135deg,#102d51,#236bb0)}
+.cart-row-copy{display:grid;gap:4px;min-width:0}
+.cart-row-copy strong{color:#f4f7fd;font:700 17px/1.1 var(--hand);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cart-row-copy span{width:max-content;max-width:100%;padding:3px 7px;border-radius:7px;color:#94a3ba;background:#1a2639;font:700 10px/1 var(--hand);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cart-row-actions{justify-self:end}
+.cart-row-actions button{font-size:12px}
+.cart-summary{padding:14px 15px}
+.cart-summary strong{font-size:20px;color:#f4f7fb}
+.cart-totals{margin-top:14px;padding:13px 14px;border:1px dashed rgba(111,137,199,.24);border-radius:16px;background:rgba(13,24,41,.55)}
+.cart-total-line{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:7px 0;color:#94a3ba;font:700 15px var(--hand)}
+.cart-total-line strong{color:#dce5f4;font:700 18px var(--hand)}
+.cart-total-line.discount strong{color:#50e9b6}
+.coupon-trigger{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;margin:7px 0;padding:10px 0;border:0;border-top:1px solid rgba(105,131,190,.14);border-bottom:1px solid rgba(105,131,190,.14);color:#b9c4d6;background:transparent;text-align:left;font:700 14px var(--hand)}
+.coupon-trigger span{color:#55eabc;white-space:nowrap}
+.coupon-trigger.applied{color:#d8fff1}
+.coupon-box{padding:10px 0 3px}
+.coupon-entry{display:grid;grid-template-columns:1fr auto;gap:8px}
+.coupon-entry input{width:100%;height:42px;padding:0 12px;border:1px solid rgba(101,133,202,.22);border-radius:12px;background:#0d1829;color:#f4f7fb;font:700 14px var(--hand)}
+.coupon-entry button{min-width:82px;height:42px;border:0;border-radius:12px;color:#06201a;background:linear-gradient(135deg,#63f1bb,#21dca8);font:700 13px var(--hand)}
+.coupon-entry button:disabled{opacity:.55}
+.coupon-status{margin-top:8px;padding:8px 10px;border-radius:10px;font:700 12px var(--hand)}
+.coupon-status.valid{color:#67efbd;background:rgba(21,126,91,.12);border:1px solid rgba(67,229,177,.17)}
+.coupon-status.expired{color:#ffd56c;background:rgba(132,95,16,.13);border:1px solid rgba(255,207,77,.16)}
+.coupon-status.invalid{color:#ff8ea1;background:rgba(126,29,49,.13);border:1px solid rgba(255,102,128,.17)}
+.coupon-remove{margin-top:7px;border:0;background:transparent;color:#ff8097;font:700 11px var(--hand)}
+
+@media(max-width:760px){
+  .course-card{max-width:670px;padding:9px;border-radius:22px}
+  .course-media-shell,.course-art,.course-real-thumbnail{border-radius:17px}
+  .course-body{padding:9px 2px 1px}
+  .course-body h3{font-size:22px}
+  .course-actions{grid-template-columns:minmax(0,1fr) 118px}
+  .cart-button-small{min-width:118px}
+  .floating-notification-button{top:20px;right:14px;width:47px;height:47px;border-radius:15px}
+}
+@media(max-width:500px){
+  .course-card{max-width:100%;padding:8px;border-radius:20px}
+  .course-media-shell,.course-art,.course-real-thumbnail{border-radius:15px}
+  .course-pills{gap:5px}
+  .price-pill,.rating-pill,.category-pill{font-size:11px;padding:6px 9px}
+  .reaction-button{min-width:67px;min-height:33px;padding:0 10px;font-size:12px}
+  .course-body h3{font-size:21px}
+  .unlock-button{min-height:47px;font-size:16px}
+  .cart-button-small{min-width:108px;font-size:13px}
+  .cart-thumb{width:58px;height:49px;flex-basis:58px}
+  .cart-row-copy strong{font-size:16px}
+  .cart-row-actions b{font-size:15px}
+  .coupon-entry{grid-template-columns:minmax(0,1fr) 76px}
+}
