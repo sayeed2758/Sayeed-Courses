@@ -25,7 +25,7 @@ button,a{color:inherit;text-decoration:none;-webkit-tap-highlight-color:transpar
 button{cursor:pointer}
 input{outline:0}
 
-.reference-app{min-height:100vh;overflow-x:hidden;background:
+.reference-app{position:relative;isolation:isolate;min-height:100vh;overflow-x:hidden;background:
   radial-gradient(850px 540px at 9% 24%,rgba(65,80,200,.14),transparent 64%),
   radial-gradient(760px 500px at 95% 52%,rgba(0,220,236,.075),transparent 67%),
   linear-gradient(180deg,#050812 0%,#070b17 50%,#050812 100%)}
@@ -172,6 +172,13 @@ input{outline:0}
 @media (max-width:390px){
   .brand-logo-image{width:34px;height:34px;flex-basis:34px}.brand-copy strong{font-size:17px}.top-actions{gap:2px}.app-button,.header-icon-button{width:34px;min-width:34px;height:34px}.verified-pill{font-size:14px;padding:9px 12px}.search-reference{min-height:60px}.search-reference input{font-size:16px}.mic-button{width:42px;height:42px;flex-basis:42px;border-radius:13px!important}.library-head h2{font-size:27px}.sort-reference{height:44px;min-width:94px;font-size:14px}.course-body h3{font-size:22px}.floating-cart-bar{grid-template-columns:auto 1fr 1.6fr}.floating-view-cart{font-size:13px}.floating-buy{font-size:13px}
 }
+
+/* Subtle ambient motion — visual polish only, no layout change. */
+@keyframes ambientFloatA{0%,100%{transform:translate3d(0,0,0) rotate(0deg)}50%{transform:translate3d(18px,12px,0) rotate(4deg)}}
+@keyframes ambientFloatB{0%,100%{transform:translate3d(0,0,0) rotate(0deg)}50%{transform:translate3d(-16px,-10px,0) rotate(-3deg)}}
+.shape-a{animation:ambientFloatA 18s ease-in-out infinite}
+.shape-b{animation:ambientFloatB 22s ease-in-out infinite}
+
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.loader-progress span,.spinning svg{animation:none}.app-button,.header-icon-button,.reaction-button{transition:none}}
 
 /* ===============================
@@ -188,23 +195,226 @@ input{outline:0}
 .course-art{position:relative;overflow:hidden}
 .course-real-thumbnail + .art-topline,.course-real-thumbnail ~ .art-brand{z-index:2}
 
-/* Safe mobile interaction rules — added without changing the visual theme. */
-html, body {
+/* ============================================================
+   SAMPLE-MATCH POLISH PATCH — KEEP ADMIN + EXISTING UI INTACT
+   ============================================================ */
+.course-card{
+  max-width: 680px;
   width: 100%;
-  max-width: 100%;
-  overflow-x: hidden;
+  margin-inline: auto;
+  padding: 10px;
+  border-radius: 24px;
+}
+.course-media-shell{overflow:hidden;border:1px solid rgba(113,143,210,.15);border-radius:18px;background:#091321}
+.course-art{border:0;border-radius:18px}
+.course-body{padding:10px 4px 2px}
+.course-pills{gap:6px}
+.price-pill,.rating-pill,.category-pill{padding:7px 10px;font-size:12px}
+.engagement-row{margin-top:8px;gap:7px}
+.reaction-button{min-height:34px;padding:0 13px;border-radius:999px}
+.course-body h3{margin:11px 0 2px;font-size:24px}
+.course-actions{margin-top:11px}
+.unlock-button{min-height:49px}
+.cart-button-small{min-width:118px}
+.course-real-thumbnail{border-radius:18px}
+
+.floating-notification-button{
+  position:absolute;
+  top:28px;
+  right:18px;
+  z-index:5;
+  width:50px;
+  height:50px;
+  border:1px solid rgba(24,214,235,.25);
+  border-radius:16px;
+  display:grid;
+  place-items:center;
+  color:var(--cyan);
+  background:rgba(9,24,39,.86);
+  box-shadow:0 12px 30px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.03);
+  backdrop-filter:blur(14px);
+}
+.floating-notification-button b{
+  position:absolute;top:-6px;right:-5px;min-width:19px;height:19px;padding:0 5px;
+  display:grid;place-items:center;border-radius:999px;border:2px solid #08101d;
+  color:#2a2107;background:var(--yellow);font:700 10px/.9 var(--hand)
 }
 
-body, body * {
-  -webkit-user-select: none;
-  user-select: none;
+/* Make the category drawer the primary top-right menu action, like the reference. */
+.category-drawer-list{max-height:calc(100dvh - 175px);overflow:auto;padding-right:4px}
+
+/* Reference-like cart rows with compact thumbnails. */
+.cart-row{grid-template-columns:minmax(0,1fr) auto;min-height:72px;padding:10px 12px}
+.cart-row-main{display:flex;align-items:center;gap:11px;min-width:0}
+.cart-thumb{width:62px;height:52px;flex:0 0 62px;overflow:hidden;display:grid;place-items:center;border:1px solid rgba(132,157,224,.2);border-radius:11px;background:#132036;color:#dce5f3;font:700 12px var(--hand);position:relative}
+.cart-thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.cart-thumb.teal{background:linear-gradient(135deg,#0a3b40,#0d8b77)}
+.cart-thumb.orange{background:linear-gradient(135deg,#52200b,#c35a0e)}
+.cart-thumb.purple{background:linear-gradient(135deg,#2b1245,#6a2b91)}
+.cart-thumb.blue{background:linear-gradient(135deg,#102d51,#236bb0)}
+.cart-row-copy{display:grid;gap:4px;min-width:0}
+.cart-row-copy strong{color:#f4f7fd;font:700 17px/1.1 var(--hand);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cart-row-copy span{width:max-content;max-width:100%;padding:3px 7px;border-radius:7px;color:#94a3ba;background:#1a2639;font:700 10px/1 var(--hand);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cart-row-actions{justify-self:end}
+.cart-row-actions button{font-size:12px}
+.cart-summary{padding:14px 15px}
+.cart-summary strong{font-size:20px;color:#f4f7fb}
+.cart-totals{margin-top:14px;padding:13px 14px;border:1px dashed rgba(111,137,199,.24);border-radius:16px;background:rgba(13,24,41,.55)}
+.cart-total-line{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:7px 0;color:#94a3ba;font:700 15px var(--hand)}
+.cart-total-line strong{color:#dce5f4;font:700 18px var(--hand)}
+.cart-total-line.discount strong{color:#50e9b6}
+.coupon-trigger{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;margin:7px 0;padding:10px 0;border:0;border-top:1px solid rgba(105,131,190,.14);border-bottom:1px solid rgba(105,131,190,.14);color:#b9c4d6;background:transparent;text-align:left;font:700 14px var(--hand)}
+.coupon-trigger span{color:#55eabc;white-space:nowrap}
+.coupon-trigger.applied{color:#d8fff1}
+.coupon-box{padding:10px 0 3px}
+.coupon-entry{display:grid;grid-template-columns:1fr auto;gap:8px}
+.coupon-entry input{width:100%;height:42px;padding:0 12px;border:1px solid rgba(101,133,202,.22);border-radius:12px;background:#0d1829;color:#f4f7fb;font:700 14px var(--hand)}
+.coupon-entry button{min-width:82px;height:42px;border:0;border-radius:12px;color:#06201a;background:linear-gradient(135deg,#63f1bb,#21dca8);font:700 13px var(--hand)}
+.coupon-entry button:disabled{opacity:.55}
+.coupon-status{margin-top:8px;padding:8px 10px;border-radius:10px;font:700 12px var(--hand)}
+.coupon-status.valid{color:#67efbd;background:rgba(21,126,91,.12);border:1px solid rgba(67,229,177,.17)}
+.coupon-status.expired{color:#ffd56c;background:rgba(132,95,16,.13);border:1px solid rgba(255,207,77,.16)}
+.coupon-status.invalid{color:#ff8ea1;background:rgba(126,29,49,.13);border:1px solid rgba(255,102,128,.17)}
+.coupon-remove{margin-top:7px;border:0;background:transparent;color:#ff8097;font:700 11px var(--hand)}
+
+@media(max-width:760px){
+  .course-card{max-width:670px;padding:9px;border-radius:22px}
+  .course-media-shell,.course-art,.course-real-thumbnail{border-radius:17px}
+  .course-body{padding:9px 2px 1px}
+  .course-body h3{font-size:22px}
+  .course-actions{grid-template-columns:minmax(0,1fr) 118px}
+  .cart-button-small{min-width:118px}
+  .floating-notification-button{top:20px;right:14px;width:47px;height:47px;border-radius:15px}
+}
+@media(max-width:500px){
+  .course-card{max-width:100%;padding:8px;border-radius:20px}
+  .course-media-shell,.course-art,.course-real-thumbnail{border-radius:15px}
+  .course-pills{gap:5px}
+  .price-pill,.rating-pill,.category-pill{font-size:11px;padding:6px 9px}
+  .reaction-button{min-width:67px;min-height:33px;padding:0 10px;font-size:12px}
+  .course-body h3{font-size:21px}
+  .unlock-button{min-height:47px;font-size:16px}
+  .cart-button-small{min-width:108px;font-size:13px}
+  .cart-thumb{width:58px;height:49px;flex-basis:58px}
+  .cart-row-copy strong{font-size:16px}
+  .cart-row-actions b{font-size:15px}
+  .coupon-entry{grid-template-columns:minmax(0,1fr) 76px}
 }
 
-input, textarea, [contenteditable="true"] {
-  -webkit-user-select: text;
-  user-select: text;
-}
+/* FINAL STABILITY + SAMPLE MATCH — keep existing UI/admin styles intact */
+.reference-tools{position:relative;z-index:5}.verified-row{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;margin-bottom:14px}.verified-row .verified-pill{margin:0;max-width:calc(100% - 56px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.verified-notification{position:relative;flex:0 0 46px;width:46px;height:46px;border:1px solid rgba(25,210,235,.25);border-radius:14px;display:grid;place-items:center;color:#17dbe7;background:rgba(8,24,40,.86);box-shadow:0 10px 28px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.03);backdrop-filter:blur(14px);cursor:pointer;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}.verified-notification:hover{transform:translateY(-1px);border-color:rgba(25,224,241,.5);box-shadow:0 14px 30px rgba(0,0,0,.28),0 0 22px rgba(25,224,241,.08)}.verified-notification b{position:absolute;top:-6px;right:-5px;min-width:18px;height:18px;padding:0 4px;display:grid;place-items:center;border-radius:999px;border:2px solid #07101d;color:#251e05;background:#ffd14d;font:700 9px/.9 var(--hand)}
+.course-grid-reference{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;width:min(100%,700px);margin:0 auto}.course-card{width:100%;max-width:700px;margin:0 auto;padding:8px;border-radius:22px;background:rgba(9,17,30,.90);border:1px solid rgba(112,143,213,.18);box-shadow:0 20px 55px rgba(0,0,0,.20)}.course-media-shell{overflow:hidden;border:1px solid rgba(115,144,210,.16);border-radius:17px;background:#091321}.course-art{aspect-ratio:1.92/1;min-height:0;border-radius:16px}.art-topline b{font-size:15px;line-height:1;padding:7px 11px;border-radius:11px;min-width:76px;text-align:center}.art-topline span{font-size:17px}.course-body{padding:9px 2px 1px}.price-pill,.rating-pill,.category-pill{padding:6px 9px;font-size:11px}.engagement-row{margin-top:7px;gap:7px}.reaction-button{min-height:33px;padding:0 12px;border-radius:999px;font-size:12px}.course-body h3{margin:10px 0 2px;font-size:21px;line-height:1.08}.course-actions{grid-template-columns:minmax(0,1fr) 112px;gap:8px;margin-top:10px}.unlock-button{min-height:46px;font-size:16px}.cart-button-small{min-width:0;font-size:13px}.sheet-overlay{z-index:1000}.reference-sheet{z-index:1001}.toast-message,.install-hint{z-index:1100}.floating-cart-bar{z-index:900}
+@media(min-width:900px){.course-grid-reference{grid-template-columns:repeat(2,minmax(0,1fr));max-width:1080px}.course-card{max-width:none}}@media(max-width:600px){.verified-row{gap:8px;margin-bottom:12px}.verified-row .verified-pill{font-size:12px;padding-inline:13px}.verified-notification{width:44px;height:44px;flex-basis:44px;border-radius:13px}.course-card{padding:7px;border-radius:20px}.course-media-shell,.course-art{border-radius:15px}.course-art{aspect-ratio:1.88/1}.art-topline b{font-size:14px;min-width:72px;padding:7px 9px;border-radius:10px}.art-topline span{font-size:16px}.course-actions{grid-template-columns:minmax(0,1fr) 106px}.course-body h3{font-size:20px}}@media(prefers-reduced-motion:reduce){.reference-app::before,.reference-app::after,.ambient,.shape-a,.shape-b{animation:none!important}}
 
-button, a, [role="button"] {
-  touch-action: manipulation;
+
+/* FINAL HOTFIX — compact course price + reliable interactive controls */
+.art-topline b{font-size:12px!important;min-width:58px!important;padding:6px 8px!important;border-radius:9px!important;line-height:1!important}
+.price-pill{font-size:10px!important;padding:6px 8px!important}
+.sheet-overlay,.reference-sheet{pointer-events:auto}
+.sheet-header>button,.drawer-category,.faq-reference-row>button,.collapse-all-reference,.verified-notification,.cart-button-small,.cart-head-button,.floating-cart-count,.floating-view-cart,.floating-buy{pointer-events:auto;touch-action:manipulation}
+@media(max-width:600px){.art-topline b{font-size:11px!important;min-width:54px!important;padding:5px 7px!important}.price-pill{font-size:10px!important;padding:5px 8px!important}.verified-row{align-items:center}.verified-notification{width:44px;height:44px;flex-basis:44px}}
+
+
+/* ============================================================
+   FINAL SAFE POLISH — current foundation only
+   ============================================================ */
+
+/* Keep the reference course card compact and give the image its own soft-square frame. */
+.course-grid-reference{gap:14px;width:min(100%,700px);margin-inline:auto}
+.course-card{max-width:680px;padding:8px;border-radius:22px}
+.course-media-shell{overflow:hidden;padding:0;border:1px solid rgba(118,145,211,.16);border-radius:18px;background:#091321}
+.course-media-shell .course-art{border:0;border-radius:17px;aspect-ratio:1.9/1}
+.course-real-thumbnail{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:inherit}
+.course-body{padding:9px 2px 2px}
+.course-pills{gap:6px}
+.price-pill,.rating-pill,.category-pill{padding:6px 9px;font-size:11px}
+.art-topline{left:17px;right:17px;top:15px}
+.art-topline span{font-size:16px}
+.art-topline b{min-width:58px;padding:6px 8px;border-radius:9px;font-size:12px!important}
+.engagement-row{margin-top:7px;gap:7px}
+.reaction-button{min-width:67px;min-height:34px;padding:0 11px;font-size:12px}
+.course-body h3{margin:10px 0 2px;font-size:21px;line-height:1.08}
+.course-actions{grid-template-columns:minmax(0,1fr) 108px;gap:8px;margin-top:10px}
+.unlock-button{min-height:46px;padding-inline:11px;font-size:16px}
+.cart-button-small{min-width:0;font-size:13px}
+
+/* Cart now behaves like the centered reference popup, while categories/FAQ/notifications remain drawers. */
+.cart-overlay{align-items:center;justify-content:center;padding:16px}
+.cart-sheet{width:min(560px,100%);height:min(86dvh,780px);padding:15px 14px 18px;border:1px solid rgba(89,118,217,.28);border-radius:24px;box-shadow:0 30px 90px rgba(0,0,0,.58),0 0 40px rgba(48,110,255,.07);overflow:hidden;display:flex;flex-direction:column}
+.cart-sheet .sheet-header{flex:0 0 auto}
+.cart-sheet .cart-reference,.cart-sheet .bag-reference-empty{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-inline:2px}
+.cart-sheet .cart-intro{margin:22px 0 13px}
+.cart-list{gap:8px;margin-top:10px}
+.cart-row{display:grid;grid-template-columns:106px minmax(0,1fr) auto;gap:10px;align-items:center;min-height:76px;padding:9px 10px;border-radius:15px}
+.cart-row>.course-art{width:106px;height:58px;aspect-ratio:auto;border:0;border-radius:12px}
+.cart-row .course-art .art-topline{left:9px;right:9px;top:8px}
+.cart-row .course-art .art-topline b{min-width:48px;padding:5px 6px;font-size:10px!important;border-radius:8px}
+.cart-row .course-art .art-topline span{font-size:12px}
+.cart-row .course-art .art-brand{right:9px;bottom:6px;font-size:9px}
+.cart-row-copy{display:grid;gap:4px;min-width:0}
+.cart-row-copy strong{color:#f4f7fd;font:700 16px/1.1 var(--hand);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cart-row-copy span{width:max-content;max-width:100%;padding:3px 7px;border-radius:7px;color:#94a3ba;background:#1a2639;font:700 10px/1 var(--hand);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cart-row-actions{display:flex;align-items:center;gap:7px;justify-self:end}
+.cart-row-actions b{color:#52ebb8;font:700 15px var(--hand);white-space:nowrap}
+.cart-row-actions button{width:34px;height:34px}
+.cart-summary-box{margin-top:12px;padding:12px 13px;border:1px dashed rgba(111,137,199,.24);border-radius:16px;background:rgba(13,24,41,.55)}
+.cart-summary-box>div{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:5px 0;color:#9aa7bc;font:700 14px var(--hand)}
+.cart-summary-box>div strong{color:#e6edf8;font:700 17px var(--hand)}
+.cart-summary-box .discount-line strong{color:#50e9b6}
+.coupon-question{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;margin:8px 0 0;padding:11px 4px;border:0;border-top:1px solid rgba(105,131,190,.14);border-bottom:1px solid rgba(105,131,190,.14);color:#b9c4d6;background:transparent;text-align:left;font:700 14px var(--hand)}
+.coupon-question>span:first-child{display:inline-flex;align-items:center;gap:7px;min-width:0}
+.coupon-question>span:last-child{color:#647490}
+.coupon-question:hover{color:#eef4ff}
+.coupon-box{padding:9px 0 2px;background:transparent}
+.coupon-entry{display:grid;grid-template-columns:minmax(0,1fr) 82px;gap:8px}
+.coupon-entry input{width:100%;height:42px;padding:0 12px;border:1px solid rgba(101,133,202,.24);border-radius:12px;background:#0d1829!important;color:#f4f7fb!important;box-shadow:none!important;font:700 14px var(--hand)}
+.coupon-entry input::placeholder{color:#73839e;opacity:1}
+.coupon-entry button{min-width:82px;height:42px;border:0;border-radius:12px;color:#06201a;background:linear-gradient(135deg,#63f1bb,#21dca8);font:700 13px var(--hand)}
+.coupon-entry button:disabled{opacity:.55}
+.coupon-error,.coupon-success{margin-top:8px;padding:8px 10px;border-radius:10px;font:700 12px var(--hand)}
+.coupon-error{color:#ff8ea1;background:rgba(126,29,49,.13);border:1px solid rgba(255,102,128,.17)}
+.coupon-success{color:#67efbd;background:rgba(21,126,91,.12);border:1px solid rgba(67,229,177,.17)}
+.cart-grand-total{margin-top:12px;padding:13px 2px 3px}
+.cart-grand-total span{font-size:16px}
+.cart-grand-total strong{font-size:28px}
+.cart-actions{margin-top:14px;grid-template-columns:1fr 1.35fr;gap:8px}
+
+/* Background-only motion: decorative objects never affect layout or interaction. */
+.floating-object{position:absolute;z-index:-1;pointer-events:none;border:1px solid rgba(123,146,234,.12);border-radius:50%;filter:blur(.2px);mix-blend-mode:screen;will-change:transform}
+.floating-object::after{content:"";position:absolute;inset:12%;border-radius:50%;background:radial-gradient(circle at 35% 35%,rgba(20,224,222,.18),transparent 62%)}
+.floating-object-a{width:170px;height:170px;left:4%;top:31%;background:radial-gradient(circle,rgba(29,217,239,.08),transparent 68%);animation:floatObjectA 17s ease-in-out infinite}
+.floating-object-b{width:240px;height:240px;right:-55px;top:56%;background:radial-gradient(circle,rgba(146,92,255,.08),transparent 68%);animation:floatObjectB 23s ease-in-out infinite}
+.floating-object-c{width:110px;height:110px;right:24%;top:19%;background:radial-gradient(circle,rgba(80,235,183,.08),transparent 68%);animation:floatObjectC 15s ease-in-out infinite}
+@keyframes floatObjectA{0%,100%{transform:translate3d(0,0,0) rotate(0deg)}50%{transform:translate3d(42px,-24px,0) rotate(40deg)}}
+@keyframes floatObjectB{0%,100%{transform:translate3d(0,0,0) rotate(0deg)}50%{transform:translate3d(-35px,30px,0) rotate(-24deg)}}
+@keyframes floatObjectC{0%,100%{transform:translate3d(0,0,0) scale(1)}50%{transform:translate3d(-24px,18px,0) scale(1.09)}}
+
+/* Keep the public header readable on narrow screens; no menu labels are forced onto one line. */
+.top-header-inner{gap:8px}
+.brand-lockup{min-width:0}
+.brand-copy{max-width:116px}
+.brand-copy strong{white-space:normal}
+.brand-copy small{overflow:hidden;text-overflow:ellipsis}
+@media(max-width:600px){
+  .course-grid-reference{gap:13px;width:calc(100% - 4px)}
+  .course-card{max-width:100%;padding:7px;border-radius:20px}
+  .course-media-shell{border-radius:16px}
+  .course-media-shell .course-art{border-radius:15px;aspect-ratio:1.9/1}
+  .art-topline b{font-size:11px!important;min-width:54px;padding:5px 7px;border-radius:8px}
+  .price-pill,.rating-pill,.category-pill{font-size:10px;padding:5px 8px}
+  .reaction-button{min-width:66px;min-height:33px;padding-inline:10px}
+  .course-body h3{font-size:20px}
+  .course-actions{grid-template-columns:minmax(0,1fr) 104px}
+  .unlock-button{font-size:15px;min-height:46px}
+  .cart-sheet{width:calc(100% - 14px);height:min(84dvh,760px);padding:12px 10px 14px;border-radius:22px}
+  .cart-sheet .sheet-header{padding-bottom:14px}
+  .cart-row{grid-template-columns:94px minmax(0,1fr) auto;gap:8px;padding:8px;min-height:70px}
+  .cart-row>.course-art{width:94px;height:54px}
+  .cart-row-copy strong{font-size:15px}
+  .cart-row-actions{gap:5px}
+  .cart-row-actions b{font-size:14px}
+  .cart-row-actions button{width:32px;height:32px}
+  .coupon-entry{grid-template-columns:minmax(0,1fr) 76px}
+  .coupon-entry button{min-width:76px}
 }
+@media(prefers-reduced-motion:reduce){.floating-object{animation:none!important}}

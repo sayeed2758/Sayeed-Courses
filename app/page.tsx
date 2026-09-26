@@ -98,17 +98,6 @@ type AppliedCoupon = {
   message: string;
 };
 
-type BeforeInstallPromptEvent = Event & {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
-};
-
-function isStandaloneApp() {
-  if (typeof window === 'undefined') return false;
-  const navigatorWithStandalone = navigator as Navigator & { standalone?: boolean };
-  return window.matchMedia('(display-mode: standalone)').matches || navigatorWithStandalone.standalone === true;
-}
-
 function Icon({ name, size = 20 }: { name: string; size?: number }) {
   const common = {
     width: size,
@@ -243,7 +232,7 @@ export default function HomePage() {
   const [votes, setVotes] = useState<Record<number, VoteState>>({});
   const [notifications, setNotifications] = useState<LiveNotification[]>(DEFAULT_NOTIFICATIONS);
   const [readNotifications, setReadNotifications] = useState<string[]>([]);
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [deferredPrompt, setDeferredPrompt] = useState<Event | null>(null);
   const [installHint, setInstallHint] = useState('');
   const [refreshing, setRefreshing] = useState(false);
   const [toast, setToast] = useState('');
@@ -298,29 +287,6 @@ export default function HomePage() {
 
     if (remoteNotifications) setNotifications(remoteNotifications);
   }, [liveBackend]);
-
-  useEffect(() => {
-    const onBeforeInstallPrompt = (event: Event) => {
-      event.preventDefault();
-      setDeferredPrompt(event as BeforeInstallPromptEvent);
-    };
-    const onAppInstalled = () => {
-      setDeferredPrompt(null);
-      showToast('App installed successfully ✅');
-    };
-
-    window.addEventListener('beforeinstallprompt', onBeforeInstallPrompt);
-    window.addEventListener('appinstalled', onAppInstalled);
-
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(() => undefined);
-    }
-
-    return () => {
-      window.removeEventListener('beforeinstallprompt', onBeforeInstallPrompt);
-      window.removeEventListener('appinstalled', onAppInstalled);
-    };
-  }, [showToast]);
 
   useEffect(() => {
     try {
@@ -503,26 +469,14 @@ export default function HomePage() {
   }
 
   async function handleInstall() {
-    if (isStandaloneApp()) {
-      showToast('App is already installed ✅');
-      return;
-    }
-
     if (deferredPrompt) {
-      try {
-        await deferredPrompt.prompt();
-        const choice = await deferredPrompt.userChoice;
-        setDeferredPrompt(null);
-        showToast(choice.outcome === 'accepted' ? 'Installing Sayeed Courses…' : 'Installation cancelled.');
-      } catch {
-        setDeferredPrompt(null);
-        setInstallHint('Open browser menu → Add to Home screen / Install app.');
-        window.setTimeout(() => setInstallHint(''), 4200);
-      }
+      const promptEvent = deferredPrompt as Event & { prompt?: () => Promise<void>; userChoice?: Promise<{ outcome: string }> };
+      await promptEvent.prompt?.();
+      await promptEvent.userChoice?.catch(() => undefined);
+      setDeferredPrompt(null);
       return;
     }
-
-    setInstallHint('Install from your browser menu → Add to Home screen / Install app.');
+    setInstallHint('Open browser menu → Add to Home screen / Install app.');
     window.setTimeout(() => setInstallHint(''), 4200);
   }
 
