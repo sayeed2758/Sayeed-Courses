@@ -300,3 +300,71 @@ input{outline:0}
   .cart-row-actions b{font-size:15px}
   .coupon-entry{grid-template-columns:minmax(0,1fr) 76px}
 }
+
+/* ============================================================
+   POLISH FIX — SAFE BACKGROUND MOTION + NOTIFICATION PLACEMENT
+   No layout/content replacement. Visual layer only.
+   ============================================================ */
+.reference-app{
+  position:relative;
+  isolation:isolate;
+}
+.reference-app::before,
+.reference-app::after{
+  content:"";
+  position:fixed;
+  z-index:0;
+  pointer-events:none;
+  border:1px solid rgba(56,214,239,.09);
+  border-radius:50%;
+  background:radial-gradient(circle at 45% 42%,rgba(17,217,236,.075),transparent 58%);
+  box-shadow:0 0 80px rgba(32,118,255,.045),inset 0 0 70px rgba(104,83,255,.035);
+  will-change:transform;
+}
+.reference-app::before{
+  width:390px;height:390px;
+  left:-145px;top:18vh;
+  animation:ambientOrbitA 24s ease-in-out infinite;
+}
+.reference-app::after{
+  width:480px;height:480px;
+  right:-205px;top:46vh;
+  animation:ambientOrbitB 30s ease-in-out infinite;
+}
+.reference-app > *{position:relative;z-index:1}
+
+@keyframes ambientOrbitA{
+  0%,100%{transform:translate3d(0,0,0) rotate(0deg) scale(1)}
+  35%{transform:translate3d(34px,18px,0) rotate(5deg) scale(1.03)}
+  70%{transform:translate3d(12px,52px,0) rotate(9deg) scale(.98)}
+}
+@keyframes ambientOrbitB{
+  0%,100%{transform:translate3d(0,0,0) rotate(0deg) scale(1)}
+  40%{transform:translate3d(-28px,-24px,0) rotate(-6deg) scale(1.04)}
+  76%{transform:translate3d(-10px,24px,0) rotate(-11deg) scale(.97)}
+}
+
+.floating-notification-button{
+  top:22px;
+  right:18px;
+  width:49px;
+  height:49px;
+  border-radius:15px;
+  border-color:rgba(16,217,236,.28);
+  background:rgba(7,19,34,.82);
+  box-shadow:0 12px 32px rgba(0,0,0,.26),0 0 0 1px rgba(16,217,236,.035) inset;
+}
+.floating-notification-button:hover{
+  transform:translateY(-1px);
+  box-shadow:0 15px 34px rgba(0,0,0,.28),0 0 22px rgba(16,217,236,.07);
+}
+.floating-notification-button svg{filter:drop-shadow(0 0 8px rgba(16,217,236,.22))}
+
+@media(max-width:760px){
+  .reference-app::before{width:320px;height:320px;left:-150px;top:17vh}
+  .reference-app::after{width:390px;height:390px;right:-205px;top:52vh}
+  .floating-notification-button{top:18px;right:14px;width:46px;height:46px;border-radius:14px}
+}
+@media(prefers-reduced-motion:reduce){
+  .reference-app::before,.reference-app::after,.shape-a,.shape-b{animation:none!important}
+}

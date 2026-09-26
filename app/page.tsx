@@ -12,6 +12,7 @@ import {
   type LiveNotification,
   type LiveVoteState,
   type LiveCourse,
+  subscribeLiveChanges,
 } from '../lib/live';
 
 const TELEGRAM_USERNAME = 'LWS_SPECIAL_SUPPORTS';
@@ -112,7 +113,9 @@ function Icon({ name, size = 20 }: { name: string; size?: number }) {
 
 function Loader({ done }: { done: () => void }) {
   useEffect(() => {
-    const timer = window.setTimeout(done, 1650);
+    // Fixed short boot window; data fetching happens independently below so
+    // a slow backend can never block the initial UI.
+    const timer = window.setTimeout(done, 1450);
     return () => window.clearTimeout(timer);
   }, [done]);
 
@@ -226,12 +229,13 @@ export default function HomePage() {
   const loadLiveData = useCallback(async () => {
     if (!liveBackend) return;
 
-    // Load the catalogue first so reaction queries always use the
-    // current Supabase course IDs (including newly-added courses).
+    // Keep this callback independent from `courses`. The previous dependency
+    // caused a request → setCourses → callback recreation → request loop that
+    // could keep the client busy and leave the app appearing stuck.
     const remoteCatalogue = await fetchCourseCatalogue();
     if (remoteCatalogue) setCourses(remoteCatalogue);
 
-    const sourceCourses = remoteCatalogue ?? courses;
+    const sourceCourses = remoteCatalogue ?? fallbackCourses;
     const [remoteVotes, remoteCount, remoteNotifications] = await Promise.all([
       fetchReactionCounts(sourceCourses.map(course => course.id)),
       fetchCourseCount(),
@@ -245,7 +249,7 @@ export default function HomePage() {
           next[row.course_id] = {
             likes: row.likes,
             dislikes: row.dislikes,
-            userVote: row.userVote,
+            userVote: row.userVote ?? next[row.course_id]?.userVote ?? null,
           };
         }
         return next;
@@ -255,7 +259,7 @@ export default function HomePage() {
     if (remoteCatalogue) setCatalogueCount(remoteCatalogue.length);
     else if (typeof remoteCount === 'number') setCatalogueCount(remoteCount);
     if (remoteNotifications?.length) setNotifications(remoteNotifications);
-  }, [liveBackend, courses]);
+  }, [liveBackend]);
 
   useEffect(() => {
     try {
@@ -294,10 +298,15 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
-    loadLiveData();
+    void loadLiveData();
     if (!liveBackend) return undefined;
-    const timer = window.setInterval(loadLiveData, 4000);
-    return () => window.clearInterval(timer);
+
+    const unsubscribe = subscribeLiveChanges(() => { void loadLiveData(); });
+    const timer = window.setInterval(() => { void loadLiveData(); }, 12000);
+    return () => {
+      unsubscribe();
+      window.clearInterval(timer);
+    };
   }, [loadLiveData, liveBackend]);
 
   const filtered = useMemo(() => {
