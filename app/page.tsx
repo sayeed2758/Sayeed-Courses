@@ -156,7 +156,7 @@ function CourseArtwork({ course, mini = false }: { course: LiveCourse; mini?: bo
   return (
     <div className={`course-art ${palette} ${mini ? 'mini' : ''}`}>
       {course.thumbnail_url ? (
-        <img src={course.thumbnail_url} alt="" loading="lazy" />
+        <img className="course-real-thumbnail" src={course.thumbnail_url} alt="" loading="lazy" />
       ) : (
         <>
           <div className="art-code">0101100101 0010110010 1011010001</div>
@@ -185,7 +185,9 @@ function CourseCard({
 }) {
   return (
     <article className="course-card">
-      <CourseArtwork course={course} />
+      <div className="course-media-shell">
+        <CourseArtwork course={course} />
+      </div>
       <div className="course-body">
         <div className="course-pills">
           <span className="price-pill">₹{course.price.toLocaleString('en-IN')}</span>
@@ -257,10 +259,12 @@ export default function HomePage() {
     ]);
 
     const sourceCourses = remoteCourses ?? DEMO_COURSES;
-    if (remoteCourses) {
+    // Only replace the fallback catalogue when we actually received usable live data.
+    // This prevents a transient empty response from making the public catalogue flash to 0.
+    if (remoteCourses && remoteCourses.length > 0) {
       setCourses(remoteCourses);
-      setCatalogueCount(remoteCourses.length);
-    } else if (typeof remoteCount === 'number') {
+      setCatalogueCount(remoteCount != null && remoteCount > 0 ? remoteCount : remoteCourses.length);
+    } else if (typeof remoteCount === 'number' && remoteCount > 0) {
       setCatalogueCount(remoteCount);
     }
 
@@ -393,6 +397,14 @@ export default function HomePage() {
           window.localStorage.setItem('sayeed_courses_votes_v4', JSON.stringify(nextState));
           return nextState;
         });
+      } else {
+        // Do not leave a fake optimistic count on screen when the database write failed.
+        setVotes(current => {
+          const nextState = { ...current, [id]: previous };
+          window.localStorage.setItem('sayeed_courses_votes_v4', JSON.stringify(nextState));
+          return nextState;
+        });
+        showToast('Reaction could not be saved. Please try again.');
       }
     }
   }
@@ -409,7 +421,8 @@ export default function HomePage() {
       return;
     }
 
-    setSheet('cart');
+    // Adding a course should not open the cart automatically.
+    // The header/floating cart stays available so the user can open it intentionally.
     showToast('Added to cart 🛒');
   }
 
@@ -489,6 +502,9 @@ export default function HomePage() {
       <div className="ambient ambient-one" />
       <div className="ambient ambient-two" />
       <div className="ambient ambient-three" />
+      <div className="floating-object floating-object-a" aria-hidden="true" />
+      <div className="floating-object floating-object-b" aria-hidden="true" />
+      <div className="floating-object floating-object-c" aria-hidden="true" />
 
       <header className="top-header">
         <div className="top-header-inner">
@@ -563,8 +579,8 @@ export default function HomePage() {
       {installHint && <div className="install-hint" role="status">{installHint}</div>}
 
       {sheet && (
-        <div className="sheet-overlay" role="dialog" aria-modal="true" onMouseDown={e => { if (e.target === e.currentTarget) setSheet(null); }}>
-          <aside className={`reference-sheet ${sheet === 'category' ? 'category-sheet' : ''}`}>
+        <div className={`sheet-overlay ${sheet === 'cart' ? 'cart-overlay' : ''}`} role="dialog" aria-modal="true" onMouseDown={e => { if (e.target === e.currentTarget) setSheet(null); }}>
+          <aside className={`reference-sheet ${sheet === 'category' ? 'category-sheet' : ''} ${sheet === 'cart' ? 'cart-sheet' : ''}`}>
             {sheet === 'category' && (
               <>
                 <div className="sheet-header"><div className="sheet-title-icon"><Icon name="layers" size={23} /></div><h2>Course Categories</h2><button type="button" onClick={() => setSheet(null)} aria-label="Close"><Icon name="x" size={21} /></button></div>
@@ -614,7 +630,14 @@ export default function HomePage() {
                       <span><Icon name="ticket" size={18} /> Do you have any Coupon Code?</span><span>⌄</span>
                     </button>
 
-                    {couponOpen && <div className="coupon-box"><input value={couponCode} onChange={e => setCouponCode(e.target.value)} placeholder="Enter coupon code..." autoCapitalize="characters" /><button type="button" onClick={applyCoupon} disabled={couponBusy}>{couponBusy ? 'Checking...' : 'Apply'}</button></div>}
+                    {couponOpen && (
+                      <div className="coupon-box">
+                        <div className="coupon-entry">
+                          <input value={couponCode} onChange={e => setCouponCode(e.target.value)} placeholder="Enter coupon code..." autoCapitalize="characters" autoComplete="off" />
+                          <button type="button" onClick={applyCoupon} disabled={couponBusy}>{couponBusy ? 'Checking...' : 'Apply'}</button>
+                        </div>
+                      </div>
+                    )}
                     {couponError && <div className="coupon-error">{couponError}</div>}
                     {appliedCoupon && <div className="coupon-success">✓ {appliedCoupon.code} applied · {appliedCoupon.percent}% OFF</div>}
 
